@@ -1,3 +1,8 @@
+
+# This workflow uses GitHub Actions to build and test the YaLCC project.
+# It sets up a Java environment, installs necessary dependencies, and runs the build and test commands.
+# It should cache the JUnit JAR and compiled classes to speed up subsequent runs.
+
 name: Build and Test YaLCC
 
 on:
@@ -34,13 +39,15 @@ jobs:
           path: lib/junit-platform-console-standalone.jar
           key: ${{ runner.os }}-junit
 
-      - name: Download JUnit if missing
-        run: |
-          if [ ! -f lib/junit-platform-console-standalone.jar ]; then
-            echo "Downloading JUnit..."
-            curl -L -o lib/junit-platform-console-standalone.jar \
+      - name: Download JUnit JAR
+        run: curl -L -o lib/junit-platform-console-standalone.jar \
               https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.10.1/junit-platform-console-standalone-1.10.1.jar
-          fi
+
+      - name: Cache compiled classes
+        uses: actions/cache@v3
+        with:
+          path: bin
+          key: ${{ runner.os }}-classes-${{ hashFiles('src/**/*.java') }}
 
       - name: Build project
         run: make all
