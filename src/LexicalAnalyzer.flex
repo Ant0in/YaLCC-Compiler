@@ -10,7 +10,7 @@
 %{
 
 private Symbol symbol(LexicalUnit type) {
-    return new Symbol(type, yyline, yycolumn);
+    return new Symbol(type, yyline, yycolumn, yytext());
 }
 
 private Symbol symbol(LexicalUnit type, Object value) {
@@ -25,7 +25,7 @@ ID_VAR         = [a-z][A-Za-z0-9_]*
 NUMBER         = [0-9]+
 WHITESPACE     = [ \t\r\n]+
 SHORT_COMMENT  = \$.*
-LONG_COMMENT   = !!([^!]|!+[^!])*!!
+LONG_COMMENT   = \!\!([^!]|!\+[^!])*?\!\!
 
 %%
 

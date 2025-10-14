@@ -33,8 +33,12 @@ public class Main {
             // read tokens until the end of stream (EOS / null token)
             Symbol token;
             while ((token = lexer.yylex()) != null) {
-                System.out.println(token);
-                if (token.getType() == LexicalUnit.EOS) break;
+                if (token.getType() != LexicalUnit.EOS) {
+                    System.out.println(token);
+                } else {
+                    System.out.println("== End of Stream ==");
+                    break;
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();  // fallback
