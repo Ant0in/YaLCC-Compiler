@@ -73,4 +73,4 @@ LONG_COMMENT   = \!\!([^!]|!\+[^!])*?\!\!
 <YYINITIAL> <<EOF>>      { return symbol(LexicalUnit.EOS); }
 
 /* fallback for unknown characters */
-. { System.err.println("Unknown character: " + yytext()); }
+. { throw new RuntimeException("Unknown character at line " + (yyline+1) + ", column " + (yycolumn+1) + ": '" + yytext() + "'"); }

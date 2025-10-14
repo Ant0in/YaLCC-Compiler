@@ -725,7 +725,7 @@ private Symbol symbol(LexicalUnit type, Object value) {
       else {
         switch (zzAction < 0 ? zzAction : ZZ_ACTION[zzAction]) {
           case 1:
-            { System.err.println("Unknown character: " + yytext());
+            { throw new RuntimeException("Unknown character at line " + (yyline+1) + ", column " + (yycolumn+1) + ": '" + yytext() + "'");
             }
             // fall through
           case 31: break;

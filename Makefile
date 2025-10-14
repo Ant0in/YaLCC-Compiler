@@ -4,7 +4,7 @@
 SRC_DIR = src
 BIN_DIR = bin
 DIST_DIR = dist
-TEST_DIR = test
+TEST_DIR = test/java
 LIB_DIR = lib
 
 # main variables
@@ -45,6 +45,7 @@ test-classes: classes
 # run tests
 test: test-classes
 	@java -jar $(JUNIT_JAR) execute --class-path $(BIN_DIR) --scan-class-path
+	@echo "[i] Tests executed"
 
 # clean
 clean:
