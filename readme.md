@@ -19,7 +19,7 @@ This Java project provides:
 - A **lexer** generated with **JFlex**.
 - Recognition of **keywords**, **identifiers**, **numbers**, **operators**, and **comments**.
 
-For more detailed problem specifications and additional information, please refer to the accompanying documentation: `./more/F403project1.pdf`.
+For more detailed problem specifications and additional information, please refer to: **`./more/F403project1.pdf`**.
 
 ## ⚙️ Installation
 
@@ -42,6 +42,8 @@ For more detailed problem specifications and additional information, please refe
     ```sh
     make
     ```
+
+Alternatively, you can compile the project directly using `javac`.
 
 ## 🛠️ Usage
 
