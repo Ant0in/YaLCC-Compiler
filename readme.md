@@ -13,7 +13,7 @@
 Welcome to the **YaLCC compiler**! This project is part of the **Language Theory course INFO—F403** at `ULB`. It implements the **lexical analysis** phase for a toy programming language called **YaLCC**, turning source code into a stream of tokens for later parsing.
 
 <div align="center">
-  <img src="more/lexer_demo.svg" alt="lexer demo" width="400"/>
+  <img src="more/lexer_demo.svg" alt="lexer demo" width="600"/>
   <p><b>YaLCC Lexer</b> scanning the tokens for <b><code>PGCD.ycc</code></b></p>
 </div>
 
