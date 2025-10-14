@@ -66,7 +66,7 @@ javadoc -d doc src/*.java
 - `-d doc`: output folder for HTML doc files.
 - `src/*.java`: java files to generate doc from.
 
-Once generated, open `doc/index.html` in a browser to explore the documentation.
+Once generated, open `doc/Main.html` in a browser to explore the documentation.
 
 ## 📄 License
 
