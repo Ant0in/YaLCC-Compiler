@@ -6,6 +6,7 @@ BIN_DIR = bin
 DIST_DIR = dist
 TEST_DIR = test/java
 LIB_DIR = lib
+MORE_DIR = more
 
 # main variables
 LEXER = $(SRC_DIR)/LexicalAnalyzer.flex
@@ -43,13 +44,23 @@ test-classes: classes
 	@javac -cp "$(JUNIT_JAR):$(BIN_DIR)" -d $(BIN_DIR) $(TEST_FILES)
 
 # run tests
-test: test-classes
-	@java -jar $(JUNIT_JAR) execute --class-path $(BIN_DIR) --scan-class-path
-	@echo "[i] Tests executed"
+test: junit-jar test-classes
+	@java -jar $(JUNIT_JAR) execute --class-path $(BIN_DIR) --scan-class-path --details=tree --disable-banner
+
+# download JUnit jar if missing
+junit-jar:
+	@mkdir -p $(LIB_DIR)
+	@if [ ! -f $(JUNIT_JAR) ]; then \
+		echo "[i] JUnit JAR not found, downloading...\n"; \
+		curl -L -o $(JUNIT_JAR) https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.10.1/junit-platform-console-standalone-1.10.1.jar; \
+	else \
+		echo "[i] JUnit JAR found."; \
+	fi
 
 # clean
 clean:
 	@rm -rf $(BIN_DIR)
 	@rm -rf $(DIST_DIR)
+	@rm -rf $(LIB_DIR)
 
 .PHONY: all dirs classes jar clean test-classes test

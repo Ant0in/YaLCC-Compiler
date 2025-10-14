@@ -6,6 +6,7 @@
   <img src="https://img.shields.io/badge/Version-1.0.0_alpha-blue" alt="Version Badge">
   <img src="https://img.shields.io/badge/License-MIT-dark_green.svg" alt="License Badge"/>
   <img src="https://img.shields.io/badge/School-ULB-yellow" alt="School Badge"/>
+  <img src="https://github.com/Ant0in/group-1/actions/workflows/YaLCC-Compiler/badge.svg" alt="Build Status"/>
 </div>
 
 # 🖋️ YaLCC Compiler
@@ -72,6 +73,22 @@ javadoc -d doc src/*.java
 - `src/*.java`: java files to generate doc from.
 
 Once generated, open `doc/index.html` in a browser to explore the documentation.
+
+## 🧪 Running Unit Tests
+
+To ensure the project works as expected, you can run the **JUnit 5 tests** for the YaLCC included in the repository.
+
+The `Makefile` provides a `test` target. When executed, it will:
+
+- Ensure the **`lib/`** folder exists and download the **JUnit 5 standalone JAR** if missing.
+- Compile all test files located in `test/java/`.
+- Run all tests automatically.
+
+Simply run:
+
+```sh
+make test
+```
 
 ## 📄 License
 
