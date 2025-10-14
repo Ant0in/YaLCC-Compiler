@@ -1,27 +1,43 @@
-package src;
 
 import java.io.FileReader;
 import java.io.IOException;
 
+/**
+ * Main class to run the lexical analyzer.
+ * Read a source file, give it to the lexer and display the tokens.
+ */
 public class Main {
+
+    /**
+     * Main method to run the lexical analyzer.
+     * @param args command line arguments; expects a single
+     *             argument: the source file path.
+     */
     public static void main(String[] args) {
+
+        // check for correct usage
         if (args.length < 1) {
-            System.out.println("Usage: java -cp bin src.Main <sourceFile>");
+            System.out.println("Usage: java -jar part1.jar <source-file>");
             return;
         }
 
-        String filename = args[0];
-        try {
-            LexicalAnalyzer lexer = new LexicalAnalyzer(new FileReader(filename));
-            Symbol token;
+        String fp = args[0];
 
-            System.out.println("Liste des tokens :");
-            while ((token = lexer.next_token()) != null) {
+        try {
+
+            // create a lexer on the provided file
+            LexicalAnalyzer lexer = new LexicalAnalyzer(new FileReader(fp));
+
+            System.out.println("== Tokens ==");
+
+            // read tokens until the end of stream (EOS / null token)
+            Symbol token;
+            while ((token = lexer.yylex()) != null) {
                 System.out.println(token);
                 if (token.getType() == LexicalUnit.EOS) break;
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            e.printStackTrace();  // fallback
         }
     }
 }
