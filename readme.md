@@ -79,4 +79,4 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 
 ## 🙏 Acknowledgements
 
-This project was developed for the **`Introduction to language theory and compiling`** course **`INFO—F403`**. Special thanks to `Gille Geeraerts (ULB)` for their guidance and support.
+This project was developed for the **`Introduction to language theory and compiling`** course **`INFO—F403`**. Special thanks to `Gilles Geeraerts (ULB)` for their guidance and support.
