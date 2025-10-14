@@ -1,0 +1,49 @@
+name: Build and Test YaLCC
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install dependencies (JFlex)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jflex make
+
+      - name: Ensure lib folder exists
+        run: mkdir -p lib
+
+      - name: Cache JUnit JAR
+        uses: actions/cache@v3
+        with:
+          path: lib/junit-platform-console-standalone.jar
+          key: ${{ runner.os }}-junit
+
+      - name: Download JUnit if missing
+        run: |
+          if [ ! -f lib/junit-platform-console-standalone.jar ]; then
+            echo "Downloading JUnit..."
+            curl -L -o lib/junit-platform-console-standalone.jar \
+              https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.10.1/junit-platform-console-standalone-1.10.1.jar
+          fi
+
+      - name: Build project
+        run: make all
+
+      - name: Run tests
+        run: make test
