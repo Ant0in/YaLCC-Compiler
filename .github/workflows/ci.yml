@@ -53,3 +53,13 @@ jobs:
 
       - name: Run tests
         run: make test
+
+      - name: Generate Javadoc
+        run: javadoc -d docs src/*.java
+
+      - name: Deploy Javadoc to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v6
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs
+          publish_branch: gh-pages
