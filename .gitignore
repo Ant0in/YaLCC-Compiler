@@ -10,7 +10,6 @@ bin/
 
 # Build tools
 target/
-doc
 build/
 .gradle
 .gradletasknamecache
