@@ -14,7 +14,7 @@ Welcome to the **YaLCC compiler**! This project is part of the **Language Theory
 
 <div align="center">
   <img src="more/lexer_demo.svg" alt="lexer demo" width="400"/>
-  <figcaption><b>YaLCC Lexer</b> scanning the tokens for <b><code>PGCD.ycc</code></b></figcaption>
+  <p><b>YaLCC Lexer</b> scanning the tokens for <b><code>PGCD.ycc</code></b></p>
 </div>
 
 ## 📜 Description
