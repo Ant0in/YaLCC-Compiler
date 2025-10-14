@@ -1,1 +1,1 @@
-# YCC
+# YaLCC
