@@ -1,0 +1,20 @@
+!! Computation of PGCD for testing purpose !!
+
+Prog PGCD Is
+
+Input(a);
+Input(b);
+c = 0;
+
+While {a <= b | b <= a} Do
+    If {a < b} Then
+        b = b - a;  $ useless comment
+    Else
+        a = a - b;  $ useless comment 2
+    End;
+End;
+
+c = a;
+Print(c);  $ pgcd
+
+End
