@@ -1,0 +1,15 @@
+!! Euclid's algorithm !!
+
+Prog Euclidean_algorithm Is
+  Input(a);
+  Input(b);
+  While {0 < b} Do
+      c = b;
+      While {b <= a} Do     $ Computation of modulo
+        a = a-b;
+      End;
+      b = a;
+      a = c;
+  End;
+  Print(a);
+End
