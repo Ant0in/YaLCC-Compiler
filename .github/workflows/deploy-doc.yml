@@ -1,0 +1,32 @@
+name: Deploy Javadoc (from doc/)
+
+on:
+  push:
+    branches: [ master ]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Javadoc
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./doc
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
