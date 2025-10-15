@@ -28,7 +28,7 @@ This Java project provides:
 - A **lexer** generated with **JFlex**.
 - Recognition of **keywords**, **identifiers**, **numbers**, **operators**, and **comments**.
 
-For more detailed problem specifications and additional information, please refer to: **`./more/F403project1.pdf`**.
+For more detailed problem specifications and additional information, please refer to: [**`./more/F403project1.pdf`**](more/F403project1.pdf).
 
 ## ⚙️ Installation
 
@@ -70,7 +70,7 @@ The complete **Javadoc** is hosted on Github Pages. It is available here:
 
 👉 [View the Javadoc online](https://ant0in.github.io/YaLCC-Compiler/)
 
-## 📄 Generating Javadoc
+## ✨ Generating Javadoc
 
 To generate documentation:
 
@@ -105,5 +105,4 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 
 ## 🙏 Acknowledgements
 
-This project was developed for the **`Introduction to language theory and compiling`** course **`INFO—F403`**. Special thanks to `Gilles Geeraerts (ULB)` for their guidance and support.
-
+This project was developed for the **`Introduction to language theory and compiling`** course **`INFO—F403`**. Special thanks to `Gilles Geeraerts (ULB)` and `Arnaud Leponce (ULB)` for their guidance and support.
