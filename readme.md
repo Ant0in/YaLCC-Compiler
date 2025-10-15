@@ -3,7 +3,7 @@
 <!-- pretty badges -->
 <div align="center">
   <img src="https://img.shields.io/badge/Language-Java-red" alt="Language Badge"/>
-  <img src="https://img.shields.io/badge/Version-1.0.0_alpha-blue" alt="Version Badge">
+  <img src="https://img.shields.io/badge/Version-1.0.1-blue" alt="Version Badge">
   <img src="https://img.shields.io/badge/License-MIT-dark_green.svg" alt="License Badge"/>
   <img src="https://img.shields.io/badge/School-ULB-yellow" alt="School Badge"/>
   <img src="https://github.com/Ant0in/YaLCC-Compiler/actions/workflows/ci.yml/badge.svg" alt="Build Status"/>
@@ -106,4 +106,5 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 ## 🙏 Acknowledgements
 
 This project was developed for the **`Introduction to language theory and compiling`** course **`INFO—F403`**. Special thanks to `Gilles Geeraerts (ULB)` for their guidance and support.
+
 
