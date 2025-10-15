@@ -7,6 +7,9 @@
   <img src="https://img.shields.io/badge/License-MIT-dark_green.svg" alt="License Badge"/>
   <img src="https://img.shields.io/badge/School-ULB-yellow" alt="School Badge"/>
   <img src="https://github.com/Ant0in/YaLCC-Compiler/actions/workflows/ci.yml/badge.svg" alt="Build Status"/>
+  <a href="https://ant0in.github.io/YaLCC-Compiler/">
+    <img src="https://img.shields.io/badge/Docs-Javadoc-brightgreen.svg" alt="Javadoc Badge"/>
+  </a>
 </div>
 
 # 🖋️ YaLCC Compiler
@@ -60,6 +63,12 @@ To run the lexer on a source file, use:
 ```sh
 java -jar dist/part1.jar test/<sourcefile>.ycc
 ```
+
+## 📚 Documentation
+
+The complete **Javadoc** is hosted on Github Pages. It is available here:
+
+👉 [View the Javadoc online](https://ant0in.github.io/YaLCC-Compiler/)
 
 ## 📄 Generating Javadoc
 
