@@ -1,4 +1,4 @@
-name: Deploy Javadoc  # from doc/ to GitHub Pages
+name: Deploy Javadoc  # from src/ to GitHub Pages
 
 on:
   push:
@@ -22,6 +22,9 @@ jobs:
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
+
+      - name: Generate Javadoc
+        run: javadoc -d doc src/*.java
 
       - name: Upload Javadoc
         uses: actions/upload-pages-artifact@v3
