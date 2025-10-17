@@ -7,7 +7,7 @@
   <img src="https://img.shields.io/badge/License-MIT-dark_green.svg" alt="License Badge"/>
   <img src="https://img.shields.io/badge/School-ULB-yellow" alt="School Badge"/>
   <img src="https://github.com/Ant0in/YaLCC-Compiler/actions/workflows/ci.yml/badge.svg" alt="Build Status"/>
-  <a href="https://ant0in.github.io/YaLCC-Compiler/">
+  <a href="https://ant0in.github.io/YaLCC-Compiler/package-summary.html">
     <img src="https://img.shields.io/badge/Docs-Javadoc-brightgreen.svg" alt="Javadoc Badge"/>
   </a>
 </div>
@@ -106,3 +106,4 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 ## 🙏 Acknowledgements
 
 This project was developed for the **`Introduction to language theory and compiling`** course **`INFO—F403`**. Special thanks to `Gilles Geeraerts (ULB)` and `Arnaud Leponce (ULB)` for their guidance and support.
+
