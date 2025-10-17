@@ -244,38 +244,76 @@ This project implements the \textbf{lexical analysis phase} of a compiler for th
 \noindent
 The following table presents the \textbf{YaLCC grammar}. Non-terminal symbols are enclosed in angle brackets $\langle\cdot\rangle$, terminal symbols are written in plain text, and $\varepsilon$ denotes the empty string. \\
 
-\begin{enumerate}[label={[\,\arabic*\,]},leftmargin=*,itemsep=4pt]
-  \item \(\langle\text{Program}\rangle \rightarrow \text{Prog [ProgName] Is }\langle\text{Code}\rangle\ \text{End}\)
-  \item \(\langle\text{Code}\rangle \rightarrow \langle\text{Instruction}\rangle\ ;\ \langle\text{Code}\rangle\)
-  \item \(\langle\text{Code}\rangle \rightarrow \varepsilon\)
-  \item \(\langle\text{Instruction}\rangle \rightarrow \langle\text{Assign}\rangle\)
-  \item \(\langle\text{Instruction}\rangle \rightarrow \langle\text{If}\rangle\)
-  \item \(\langle\text{Instruction}\rangle \rightarrow \langle\text{While}\rangle\)
-  \item \(\langle\text{Instruction}\rangle \rightarrow \langle\text{Call}\rangle\)
-  \item \(\langle\text{Instruction}\rangle \rightarrow \langle\text{Output}\rangle\)
-  \item \(\langle\text{Instruction}\rangle \rightarrow \langle\text{Input}\rangle\)
-  \item \(\langle\text{Assign}\rangle \rightarrow [\text{VarName}]\ =\ \langle\text{ExprArith}\rangle\)
-  \item \(\langle\text{ExprArith}\rangle \rightarrow [\text{VarName}]\)
-  \item \(\langle\text{ExprArith}\rangle \rightarrow [\text{Number}]\)
-  \item \(\langle\text{ExprArith}\rangle \rightarrow (\,\langle\text{ExprArith}\rangle\,)\)
-  \item \(\langle\text{ExprArith}\rangle \rightarrow -\,\langle\text{ExprArith}\rangle\)
-  \item \(\langle\text{ExprArith}\rangle \rightarrow \langle\text{ExprArith}\rangle\ \langle\text{Op}\rangle\ \langle\text{ExprArith}\rangle\)
-  \item \(\langle\text{Op}\rangle \rightarrow +\)
-  \item \(\langle\text{Op}\rangle \rightarrow -\)
-  \item \(\langle\text{Op}\rangle \rightarrow *\)
-  \item \(\langle\text{Op}\rangle \rightarrow /\)
-  \item \(\langle\text{If}\rangle \rightarrow \text{If }\{\ \langle\text{Cond}\rangle\ \}\ \text{Then }\langle\text{Code}\rangle\ \text{End}\)
-  \item \(\langle\text{If}\rangle \rightarrow \text{If }\{\ \langle\text{Cond}\rangle\ \}\ \text{Then }\langle\text{Code}\rangle\ \text{Else }\langle\text{Code}\rangle\ \text{End}\)
-  \item \(\langle\text{Cond}\rangle \rightarrow \langle\text{Cond}\rangle\ \rightarrow\ \langle\text{Cond}\rangle\)  % si '->' est l'opérateur, remplacer par \(\to\) ou \(\text{->}\) selon préférence
-  \item \(\langle\text{Cond}\rangle \rightarrow \lvert\langle\text{Cond}\rangle\rvert\)
-  \item \(\langle\text{Cond}\rangle \rightarrow \langle\text{ExprArith}\rangle\ \langle\text{Comp}\rangle\ \langle\text{ExprArith}\rangle\)
-  \item \(\langle\text{Comp}\rangle \rightarrow ==\)
-  \item \(\langle\text{Comp}\rangle \rightarrow <=\)
-  \item \(\langle\text{Comp}\rangle \rightarrow <\)
-  \item \(\langle\text{While}\rangle \rightarrow \text{While }\{\langle\text{Cond}\rangle\}\ \text{Do }\langle\text{Code}\rangle\ \text{End}\)
-  \item \(\langle\text{Output}\rangle \rightarrow \text{Print( [VarName] )}\)
-  \item \(\langle\text{Input}\rangle \rightarrow \text{Input( [VarName] )}\)
-\end{enumerate}
+\begin{resultbox}{YaLCC Grammar}
+\renewcommand{\arraystretch}{1.5}
+\setlength{\tabcolsep}{8pt}
+\begin{tabularx}{\linewidth}{|l|X|}
+\hline
+\textbf{Non-terminal} & \textbf{Production} \\
+\hline
+$\langle\text{Program}\rangle$ & Prog [ProgName] Is $\langle\text{Code}\rangle$ End \\
+\hline
+$\langle\text{Code}\rangle$ & $\langle\text{Instruction}\rangle$ ; $\langle\text{Code}\rangle$ \\
+\hline
+$\langle\text{Code}\rangle$ & $\varepsilon$ \\
+\hline
+$\langle\text{Instruction}\rangle$ & $\langle\text{Assign}\rangle$ \\
+\hline
+$\langle\text{Instruction}\rangle$ & $\langle\text{If}\rangle$ \\
+\hline
+$\langle\text{Instruction}\rangle$ & $\langle\text{While}\rangle$ \\
+\hline
+$\langle\text{Instruction}\rangle$ & $\langle\text{Call}\rangle$ \\
+\hline
+$\langle\text{Instruction}\rangle$ & $\langle\text{Output}\rangle$ \\
+\hline
+$\langle\text{Instruction}\rangle$ & $\langle\text{Input}\rangle$ \\
+\hline
+$\langle\text{Assign}\rangle$ & [VarName] = $\langle\text{ExprArith}\rangle$ \\
+\hline
+$\langle\text{ExprArith}\rangle$ & [VarName] \\
+\hline
+$\langle\text{ExprArith}\rangle$ & [Number] \\
+\hline
+$\langle\text{ExprArith}\rangle$ & ( $\langle\text{ExprArith}\rangle$ ) \\
+\hline
+$\langle\text{ExprArith}\rangle$ & - $\langle\text{ExprArith}\rangle$ \\
+\hline
+$\langle\text{ExprArith}\rangle$ & $\langle\text{ExprArith}\rangle$ $\langle\text{Op}\rangle$ $\langle\text{ExprArith}\rangle$ \\
+\hline
+$\langle\text{Op}\rangle$ & + \\
+\hline
+$\langle\text{Op}\rangle$ & - \\
+\hline
+$\langle\text{Op}\rangle$ & * \\
+\hline
+$\langle\text{Op}\rangle$ & / \\
+\hline
+$\langle\text{If}\rangle$ & If { $\langle\text{Cond}\rangle$ } Then $\langle\text{Code}\rangle$ End \\
+\hline
+$\langle\text{If}\rangle$ & If { $\langle\text{Cond}\rangle$ } Then $\langle\text{Code}\rangle$ Else $\langle\text{Code}\rangle$ End \\
+\hline
+$\langle\text{Cond}\rangle$ & $\langle\text{Cond}\rangle \rightarrow \langle\text{Cond}\rangle$ \\
+\hline
+$\langle\text{Cond}\rangle$ & $|\langle\text{Cond}\rangle|$ \\
+\hline
+$\langle\text{Cond}\rangle$ & $\langle\text{ExprArith}\rangle \langle\text{Comp}\rangle \langle\text{ExprArith}\rangle$ \\
+\hline
+$\langle\text{Comp}\rangle$ & == \\
+\hline
+$\langle\text{Comp}\rangle$ & <= \\
+\hline
+$\langle\text{Comp}\rangle$ & < \\
+\hline
+$\langle\text{While}\rangle$ & While { $\langle\text{Cond}\rangle$ } Do $\langle\text{Code}\rangle$ End \\
+\hline
+$\langle\text{Output}\rangle$ & Print( [VarName] ) \\
+\hline
+$\langle\text{Input}\rangle$ & Input( [VarName] ) \\
+\hline
+\end{tabularx}
+\end{resultbox}
+
 
 \newpage
 
