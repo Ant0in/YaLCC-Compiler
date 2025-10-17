@@ -159,4 +159,76 @@ public class LexerTest {
             assertEquals(unit, token.getType());
         }
     }
+
+
+    /**
+     * Test all keywords and symbols to ensure they are recognized correctly.
+     */
+    @Test
+    public void testAllKeywordsAndSymbols() throws Exception {
+
+        // sample code with all keywords and symbols
+        String code = "If Then Else While Do End = == < <= -> | + - * /";
+        LexicalAnalyzer lexer = new LexicalAnalyzer(new StringReader(code));
+
+        // expected tokens in order
+        LexicalUnit[] expected = {
+            LexicalUnit.IF, LexicalUnit.THEN, LexicalUnit.ELSE, LexicalUnit.WHILE, LexicalUnit.DO, LexicalUnit.END,
+            LexicalUnit.ASSIGN, LexicalUnit.EQUAL, LexicalUnit.SMALLER, LexicalUnit.SMALEQ,
+            LexicalUnit.IMPLIES, LexicalUnit.PIPE,
+            LexicalUnit.PLUS, LexicalUnit.MINUS, LexicalUnit.TIMES, LexicalUnit.DIVIDE
+        };
+
+        // check each token in sequence
+        for (LexicalUnit unit : expected) {
+            assertEquals(unit, lexer.yylex().getType());
+        }
+    }
+
+    /**
+     * Test that identifiers (variable and program names) are recognized correctly.
+     */
+    @Test
+    public void testIdentifiers() throws Exception {
+
+        // sample code with identifiers
+        String code = "Prog Test123 Is a1 b_2 c3;";
+        LexicalAnalyzer lexer = new LexicalAnalyzer(new StringReader(code));
+
+        assertEquals(LexicalUnit.PROG, lexer.yylex().getType());
+        assertEquals(LexicalUnit.PROGNAME, lexer.yylex().getType());  // Test123 (pid)
+        assertEquals(LexicalUnit.IS, lexer.yylex().getType());
+        for (int i = 0; i < 3; i++) {
+            assertEquals(LexicalUnit.VARNAME, lexer.yylex().getType());  // a1, b_2, c3 (vid)
+        }
+    }
+
+    /**
+     * Test that the lexer correctly identifies the end of stream (EOS).
+     */
+    @Test
+    public void testEmptyInput() throws Exception {
+
+        // sample code with empty input
+        LexicalAnalyzer lexer = new LexicalAnalyzer(new StringReader(""));
+
+        // Expect an EOS token immediately
+        Symbol token = lexer.yylex();
+        assertEquals(LexicalUnit.EOS, token.getType());
+    }
+
+    /**
+     * Test that an unterminated long comment throws an exception.
+     */
+    @Test
+    public void testUnterminatedLongCommentThrows() throws Exception {
+
+        // sample code with unterminated long comment
+        String code = "!! this comment never ends";
+        LexicalAnalyzer lexer = new LexicalAnalyzer(new StringReader(code));
+
+        // Expect a RuntimeException when trying to read the unterminated comment
+        assertThrows(RuntimeException.class, lexer::yylex);
+    }
+
 }
