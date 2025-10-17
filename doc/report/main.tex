@@ -11,6 +11,56 @@
 \usepackage{array}
 \usepackage{longtable}
 \usepackage{fancyhdr}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\usepackage{booktabs}
+\usepackage{tabularx}
+
+% ========= TCOLOR BOX DEF ========= %
+\usepackage[most]{tcolorbox}
+\tcbset{
+  colback=gray!5,
+  colframe=gray!50,
+  boxrule=0.5pt,
+  arc=2mm,
+  left=8pt,right=8pt,top=2pt,bottom=2pt,
+  fonttitle=\bfseries
+}
+\newtcolorbox{resultbox}[1]{title={#1}}
+% ================================== %
+
+
+% ========= YALCC COLOR FOR CODE ========= %
+\definecolor{keywordcolor}{RGB}{0,0,180}
+\definecolor{commentcolor}{RGB}{100,100,100}
+\definecolor{stringcolor}{RGB}{163,21,21}
+\definecolor{identifiercolor}{RGB}{10,80,10}
+\lstdefinelanguage{YaLCC}{
+  morekeywords={Prog,Is,End,If,Then,Else,While,Do,Input,Print},
+  morecomment=[l]{\$},      % single-line comments
+  morecomment=[s]{!!}{!!},  % long comments
+  morestring=[b]",           % string-like constructs if needed
+  sensitive=true             % case-sensitive
+}
+\lstdefinestyle{yalccstyle}{
+  language=YaLCC,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{keywordcolor}\bfseries,
+  commentstyle=\color{commentcolor}\itshape,
+  stringstyle=\color{stringcolor},
+  identifierstyle=\color{identifiercolor},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  stepnumber=1,
+  numbersep=6pt,
+  frame=single,
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=4
+}
+% ======================================== %
+
 
 
 \pagestyle{fancy}
@@ -25,7 +75,7 @@
 \title{\textbf{INFO—F-403} \\
 Introduction to language theory and compiling \\ 
 Project Report}
-\author{Berthion Antoine - 566199 \and Bontridder Milan - xxxxxx}
+\author{Berthion Antoine - 566199 \and Bontridder Milan - 493709}
 \date{15 October 2025}
 
 \begin{document}
@@ -65,7 +115,7 @@ This project implements the \textbf{lexical analysis phase} of a compiler for th
     \item Short (\texttt{\$}) and long (\texttt{!!}) comments, which are ignored by the parser \\
 \end{itemize}
 
-\noindent The complete \textbf{symbol table}, listing all recognized variables along with their first occurrence line numbers, is provided in \textbf{Appendix~\ref{appendix:symbol-table}}.
+\noindent The complete \textbf{symbol table}, listing all recognized tokens, is provided in \textbf{Appendix~\ref{appendix:symbol-table}}.
 
 
 \section{Project Overview}
@@ -234,48 +284,54 @@ The following table presents the \textbf{YaLCC grammar}. Non-terminal symbols ar
 
 \noindent The following examples demonstrate the \textbf{YaLCC lexer} applied to sample programs. For each program, we present the source code, the resulting lexical tokens, and the symbol table.
 
-\subsection*{Example 1: Single Input}
+\subsection{Single Input}
 
-\subsubsection{Code:}
-
-\begin{verbatim}
+\begin{resultbox}{Code}
+\begin{lstlisting}[style=yalccstyle]
 Input(b)
-\end{verbatim}
+\end{lstlisting}
+\end{resultbox}
 
-\subsubsection{Results:}
-
-\begin{longtable}{p{6cm}p{5cm}}
-\textbf{Token} & \textbf{Lexical Unit} \\
-\hline
+\begin{resultbox}{Results}
+\begin{tabularx}{\linewidth}{|>{\bfseries}X|X|}
+\toprule
+Token & Lexical Unit \\
+\midrule
 Input & INPUT \\
 ( & LPAREN \\
 b & VARNAME \\
 ) & RPAREN \\
-\end{longtable}
+\bottomrule
+\end{tabularx}
 
-\begin{longtable}{p{6cm}p{5cm}}
-\textbf{Variable} & \textbf{First Occurrence Line} \\
-\hline
+\vspace{2em}
+
+\begin{tabularx}{\linewidth}{|>{\bfseries}X|X|}
+\toprule
+Variable & First Occurrence Line \\
+\midrule
 b & 1 \\
-\end{longtable}
+\bottomrule
+\end{tabularx}
+\end{resultbox}
 
-\subsection*{Example 2: Conditional Statement with spaces}
+\subsection{Statement with spaces}
 
-\subsubsection{Code:}
-
-\begin{verbatim}
+\begin{resultbox}{Code}
+\begin{lstlisting}[style=yalccstyle]
 (
     If abbb
     Then
         x = 3
     ;
-\end{verbatim}
+\end{lstlisting}
+\end{resultbox}
 
-\subsubsection{Results:}
-
-\begin{longtable}{p{6cm}p{5cm}}
-\textbf{Token} & \textbf{Lexical Unit} \\
-\hline
+\begin{resultbox}{Results}
+\begin{tabularx}{\linewidth}{|>{\bfseries}X|X|}
+\toprule
+Token & Lexical Unit \\
+\midrule
 ( & LPAREN \\
 If & IF \\
 abbb & VARNAME \\
@@ -284,17 +340,20 @@ x & VARNAME \\
 = & ASSIGN \\
 3 & NUMBER \\
 ; & SEMI \\
-\end{longtable}
+\bottomrule
+\end{tabularx}
 
-\begin{longtable}{p{6cm}p{5cm}}
-\textbf{Variable} & \textbf{First Occurrence Line} \\
-\hline
+\vspace{2em}
+
+\begin{tabularx}{\linewidth}{|>{\bfseries}X|X|}
+\toprule
+Variable & First Occurrence Line \\
+\midrule
 abbb & 2 \\
 x & 5 \\
-\end{longtable}
-
-
-
+\bottomrule
+\end{tabularx}
+\end{resultbox}
 
 
 \end{document}
