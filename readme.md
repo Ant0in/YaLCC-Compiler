@@ -75,7 +75,7 @@ The complete **Javadoc** is hosted on Github Pages. It is available here:
 To generate documentation:
 
 ```sh
-javadoc -d doc src/*.java
+javadoc -d doc src/*.java  # use -private flag to show `all members`
 ```
 
 - `-d doc`: output folder for HTML doc files.
@@ -106,4 +106,3 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 ## 🙏 Acknowledgements
 
 This project was developed for the **`Introduction to language theory and compiling`** course **`INFO—F403`**. Special thanks to `Gilles Geeraerts (ULB)` and `Arnaud Leponce (ULB)` for their guidance and support.
-
