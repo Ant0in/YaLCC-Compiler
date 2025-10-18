@@ -107,7 +107,7 @@ public class LexerTest {
     public void testLongCommentIgnored() throws Exception {
 
         // sample code with a long comment
-        String code = "!! this is a long comment \n yeah long !!\nProg Test Is";
+        String code = "!! this is a long comment \n yeah long !!!!Is it ?!!\nProg Test Is";
         LexicalAnalyzer lexer = new LexicalAnalyzer(new StringReader(code));
 
         // token Prog (should have skipped the comment)
