@@ -68,7 +68,7 @@ java -jar dist/part1.jar test/<sourcefile>.ycc
 
 The complete **Javadoc** is hosted on Github Pages. It is available here:
 
-👉 [View the Javadoc online](https://ant0in.github.io/YaLCC-Compiler/)
+👉 [View the Javadoc online](https://ant0in.github.io/YaLCC-Compiler/package-summary.html)
 
 ## ✨ Generating Javadoc
 
@@ -106,4 +106,3 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 ## 🙏 Acknowledgements
 
 This project was developed for the **`Introduction to language theory and compiling`** course **`INFO—F403`**. Special thanks to `Gilles Geeraerts (ULB)` and `Arnaud Leponce (ULB)` for their guidance and support.
-
