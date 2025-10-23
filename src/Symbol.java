@@ -7,19 +7,20 @@
  */
  
  public class Symbol{
-     /**
-      * Undefined line/column position of symbol.
-      */
+
+    /**
+     * Undefined line/column position of symbol.
+     */
 	private static final int UNDEFINED_POSITION = -1;
     
-     /**
+    /**
       * No value attached to symbol, for terminals without value.
       */
 	private static final Object NO_VALUE = null;
 	
     /**
-     * The LexicalUnit (terminal) attached to this token.
-     */
+      * The LexicalUnit (terminal) attached to this token.
+      */
 	private final LexicalUnit type;
     
     /**
@@ -42,9 +43,9 @@
      * @param column the column where the symbol appears in the file.
      * @param value the value of the symbol.
      */
-	public Symbol(LexicalUnit unit,int line,int column,Object value){
+	public Symbol(LexicalUnit unit, int line, int column, Object value) {
 		this.type	= unit;
-		this.line	= line+1;
+		this.line	= line + 1;
 		this.column	= column;
 		this.value	= value;
 	}
@@ -56,8 +57,8 @@
      * @param line the line where the symbol appears in the file.
      * @param column the column where the symbol appears in the file.
      */
-	public Symbol(LexicalUnit unit,int line,int column){
-		this(unit,line,column,NO_VALUE);
+	public Symbol(LexicalUnit unit, int line, int column) {
+		this(unit, line, column, NO_VALUE);
 	}
 	
     /**
@@ -66,8 +67,8 @@
      * @param unit the LexicalUnit (terminal) associated with the symbol.
      * @param line the line where the symbol appears in the file.
      */
-	public Symbol(LexicalUnit unit,int line){
-		this(unit,line,UNDEFINED_POSITION,NO_VALUE);
+	public Symbol(LexicalUnit unit, int line) {
+		this(unit, line, UNDEFINED_POSITION, NO_VALUE);
 	}
 	
     /**
@@ -75,8 +76,8 @@
      * 
      * @param unit the LexicalUnit (terminal) associated with the symbol.
      */
-	public Symbol(LexicalUnit unit){
-		this(unit,UNDEFINED_POSITION,UNDEFINED_POSITION,NO_VALUE);
+	public Symbol(LexicalUnit unit) {
+		this(unit, UNDEFINED_POSITION, UNDEFINED_POSITION, NO_VALUE);
 	}
 	
     /**
@@ -85,8 +86,8 @@
      * @param unit the LexicalUnit (terminal) associated with the symbol.
      * @param value the value of the symbol.
      */
-	public Symbol(LexicalUnit unit,Object value){
-		this(unit,UNDEFINED_POSITION,UNDEFINED_POSITION,value);
+	public Symbol(LexicalUnit unit, Object value) {
+	    this(unit, UNDEFINED_POSITION, UNDEFINED_POSITION, value);
 	}
 
     /**
@@ -96,7 +97,7 @@
      * 
      * @return a boolean which is true iff the Symbol represents a terminal.
      */
-	public boolean isTerminal(){
+	public boolean isTerminal() {
 		return this.type != null;
 	}
 	
@@ -107,7 +108,7 @@
      * 
      * @return a boolean which is true iff the Symbol represents a non-terminal.
      */
-	public boolean isNonTerminal(){
+	public boolean isNonTerminal() {
 		return this.type == null;
 	}
 	
@@ -118,7 +119,7 @@
      * 
      * @return the value of attribute {@link type type}.
      */
-	public LexicalUnit getType(){
+	public LexicalUnit getType() {
 		return this.type;
 	}
 	
@@ -127,7 +128,7 @@
      * 
      * @return the value of attribute {@link value value}.
      */
-	public Object getValue(){
+	public Object getValue() {
 		return this.value;
 	}
 	
@@ -136,7 +137,7 @@
      * 
      * @return the value of attribute {@link line line}.
      */
-	public int getLine(){
+	public int getLine() {
 		return this.line;
 	}
 	
@@ -145,7 +146,7 @@
      * 
      * @return the value of attribute {@link column column}.
      */
-	public int getColumn(){
+	public int getColumn() {
 		return this.column;
 	}
 	
@@ -155,10 +156,10 @@
      * @return a hash code based on the type and value of the Symbol.
      */
 	@Override
-	public int hashCode(){
-		final String value	= this.value != null? this.value.toString() : "null";
-		final String type		= this.type  != null? this.type.toString()  : "null";
-		return new String(value+"_"+type).hashCode();
+	public int hashCode() {
+		final String value = this.value != null ? this.value.toString() : "null";
+		final String type = this.type != null ? this.type.toString() : "null";
+		return new String(value + "_" + type).hashCode();
 	}
 	
     /**
@@ -168,14 +169,15 @@
      * @return a string representation of the token's value and type.
      */
 	@Override
-	public String toString(){
-        final String value	= this.value != null? this.value.toString() : "null";
-		if(this.isTerminal()){
-			final String type		= this.type  != null? this.type.toString()  : "null";
-			return "token: "+padTo(value,12)+"\tlexical unit: "+type; // The longest keyword has length 7
+	public String toString() {
+        final String value = this.value != null ? this.value.toString() : "null";
+		if (this.isTerminal()) {
+			final String type = this.type != null ? this.type.toString() : "null";
+			return "token: " + padTo(value, 12) + "\tlexical unit: " + type; // The longest keyword has length 7
 		}
-		return "Non-terminal symbol: "+value;
+		return "Non-terminal symbol: " + value;
 	}
+
     /**
      * Returns a string padded with spaces up to the specified length.
      * 
@@ -183,12 +185,25 @@
      * @param l the (minimal) length to be reached.
      * @return a String containing the original string and spaces to reach at least length l.
      */
-    private String padTo(String s, int l){
-        int n=s.length();
-        String res=s;
-        for (int i=1; i<l-n; i++) {
-            res+=" ";
+    private String padTo(String s, int l) {
+        int n = s.length();
+        String res = s;
+        for (int i = 1; i < l - n; i++) {
+            res += " ";
         }
         return res;
     }
- }
+
+    /**
+     * Returns a LaTeX-compatible string representation of the symbol.
+     * 
+     * @return a string representation of the symbol suitable for LaTeX.
+     */
+    public String toTexString() {
+
+        // TODO: implement special characters if needed
+        return this.toString();
+
+    }
+
+}
