@@ -57,10 +57,19 @@ junit-jar:
 		echo "[i] JUnit JAR found."; \
 	fi
 
+# generate javadoc (ignore doclint warnings from generated code)
+javadoc:
+	@mkdir -p doc
+	# remove everything in doc/ except report
+	@find doc -mindepth 1 -maxdepth 1 ! -name 'report' -exec rm -rf {} +
+	# generate javadoc
+	@javadoc -Xdoclint:none -html5 -d doc $(JAVA_FILES)
+	@echo "[i] Javadoc generated in ./doc (doclint disabled)"
+
 # clean
 clean:
 	@rm -rf $(BIN_DIR)
 	@rm -rf $(DIST_DIR)
 	@rm -rf $(LIB_DIR)
 
-.PHONY: all dirs classes jar clean test-classes test
+.PHONY: all dirs classes jar clean test-classes test javadoc junit-jar
