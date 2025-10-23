@@ -192,14 +192,14 @@ public class LexerTest {
     public void testIdentifiers() throws Exception {
 
         // sample code with identifiers
-        String code = "Prog Test123 Is a1 b_2 c3;";
+        String code = "Prog Test_Test Is a1 b cCc;";
         LexicalAnalyzer lexer = new LexicalAnalyzer(new StringReader(code));
 
         assertEquals(LexicalUnit.PROG, lexer.yylex().getType());
-        assertEquals(LexicalUnit.PROGNAME, lexer.yylex().getType());  // Test123 (pid)
+        assertEquals(LexicalUnit.PROGNAME, lexer.yylex().getType());  // Test_Test (pid)
         assertEquals(LexicalUnit.IS, lexer.yylex().getType());
         for (int i = 0; i < 3; i++) {
-            assertEquals(LexicalUnit.VARNAME, lexer.yylex().getType());  // a1, b_2, c3 (vid)
+            assertEquals(LexicalUnit.VARNAME, lexer.yylex().getType());  // a1, b, cCc (vid)
         }
     }
 
