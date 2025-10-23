@@ -201,8 +201,14 @@
      */
     public String toTexString() {
 
-        // TODO: implement special characters if needed
-        return this.toString();
+        // !! copilot wrote this, I don't know if it's exactly what we want, review needed !!
+
+        final String value = this.value != null ? this.value.toString() : "null";
+        if (this.isTerminal()) {
+            final String type = this.type != null ? this.type.toString() : "null";
+            return "\\texttt{" + value + "}\\\\\\textit{" + type + "}"; // The longest keyword has length 7
+        }
+        return  "\\textbf{Non-terminal symbol:} " + value;
 
     }
 

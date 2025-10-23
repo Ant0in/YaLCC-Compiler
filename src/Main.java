@@ -1,63 +1,141 @@
 
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.Map;
-import java.util.TreeMap;
+import java.io.*;
+
 
 /**
- * Main class to run the lexical analyzer.
- * Read a source file, give it to the lexer and display the tokens and variables.
+ * Main class to run the parser for YaLCC.
+ * Read a source file, parse it, and print leftmost derivation rule numbers.
+ * Additionally, can output LaTeX representation if specified.
  */
 public class Main {
 
     /**
-     * Main method to run the lexical analyzer.
-     * @param args command line arguments; expects a single argument: the source file path.
+     * Helper class to parse command line arguments.
      */
-    public static void main(String[] args) {
+    private static class ArgParser {
 
-        // check for correct number of arguments (1)
-        if (args.length < 1) {
-            System.out.println("Usage: java -jar part1.jar <source-file>");
-            return;
+        /** The input source file */
+        String inputFile;
+
+        /** The optional LaTeX output file */
+        String latexFile;
+
+        /**
+         * Parses command line arguments. Will exit on invalid arguments.
+         * @param args command line arguments
+         */
+        ArgParser(String[] args) {
+
+            // 1 argument: source file only
+            // 3 arguments: -wt latexFile sourceFile
+            // otherwise: error
+
+            if (args.length == 1) {
+
+                inputFile = args[0];
+                latexFile = null;
+
+            } else if (args.length == 3 && args[0].equals("-wt")) {
+
+                latexFile = args[1];
+                inputFile = args[2];
+
+            } else {
+
+                System.err.println("Invalid arguments. Usage: java -jar part2.jar [-wt filename.tex] sourceFile.ycc");
+                System.exit(1);
+
+            }
         }
-        runLexer(args[0]);
+
     }
 
     /**
-     * Run the lexical analyzer on the given source file.
-     * It prints all tokens and a list of variables with their first occurrence line.
-     * @param filePath the path to the source file.
+     * Main method to run the parser.
+     * @param args command line arguments; expects source file and optional -wt for LaTeX output
      */
-    private static void runLexer(String filePath) {
+    public static void main(String[] args) {
 
-        try {
+        // Parse command line arguments
+        ArgParser parsed = new ArgParser(args);
+        String inputFile = parsed.inputFile;
+        String latexFile = parsed.latexFile;
 
-            // create lexer and variable map
-            LexicalAnalyzer lexer = new LexicalAnalyzer(new FileReader(filePath));
-            Map<String, Integer> varMap = new TreeMap<>();
-            Symbol token;
+        // Parse the input file
+        ParseTree tree = parseFile(inputFile);
 
-            // process tokens until there are none left
-            while ((token = lexer.yylex()) != null) {
+        // handle tree
+        if (tree != null) {
 
-                if (token.getType() == LexicalUnit.EOS) break;  // end of stream token -> stop processing
+            // print leftmost derivation rule numbers
+            printRuleNumbers(tree);
 
-                System.out.println(token);
-                if (token.getType() == LexicalUnit.VARNAME) {
-                    varMap.putIfAbsent(token.getValue().toString(), token.getLine());
-                }
+            // if LaTeX output requested, write to file
+            if (latexFile != null) {
+                writeLaTeXToFile(tree, latexFile);
             }
 
-            // print variables if any
-            if (!varMap.isEmpty()) {
-                System.out.println("Variables");
-                varMap.forEach((name, line) -> System.out.println(name + " " + line));
-            }
-
-        // catch io exceptions (there might be more but this will do for now)
-        } catch (IOException e) {
-            System.err.println("I/O Error: " + e.getMessage());
         }
+
     }
+
+    private static void writeLaTeXToFile(ParseTree tree, String latexFile) {
+
+        try (FileWriter fw = new FileWriter(latexFile)) {
+            fw.write(tree.toLaTeX());
+            System.out.println("LaTeX output written to " + latexFile);
+        } catch (IOException e) {
+            System.err.println("Error writing LaTeX file: " + e.getMessage());
+        }
+
+    }
+
+    /**
+     * Parses the input file and returns the parse tree.
+     * @param filename the source file to parse
+     * @return the resulting parse tree
+     */
+    private static ParseTree parseFile(String filename) {
+
+        ParseTree tree = null;
+
+        // try parsing the file
+        try (FileReader fr = new FileReader(filename)) {
+
+            // create lexer and parser, and parse the program
+            LexicalAnalyzer lexer = new LexicalAnalyzer(fr);
+            Parser parser = new Parser(lexer);
+            tree = parser.parseProgram();
+
+        } catch (IOException e) {
+            // file reading error
+            System.err.println("File error: " + e.getMessage());
+        } catch (Exception e) {
+            // TODO: make more specific error so that we don't catch all exceptions
+            System.err.println("Parsing error: " + e.getMessage());
+        }
+    
+        return tree;
+
+    }
+
+    /**
+     * Recursively prints the rule numbers in leftmost derivation order.
+     * @param node the current parse tree node
+     */
+    private static void printRuleNumbers(ParseTree node) {
+
+        // this works recursively in a pre-order traversal (DFS)
+        // if the rule number is valid, print it, then visit children
+
+        if (node.getRuleNumber() != -1) {
+            System.out.print(node.getRuleNumber() + " ");
+        }
+
+        for (ParseTree child : node.getChildren()) {
+            printRuleNumbers(child);
+        }
+
+    }
+
 }

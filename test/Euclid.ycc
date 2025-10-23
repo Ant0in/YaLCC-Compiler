@@ -1,5 +1,12 @@
 !! Euclid's algorithm !!
 
+!!
+1 2 14 2 14 2 12 16 18
+23 23 2 9 23 2 12 16 18
+23 23 2 9 20 23 23 3 2 9
+23 2 9 23 3 2 13 3
+!!
+
 Prog Euclidean_algorithm Is
   Input(a);
   Input(b);

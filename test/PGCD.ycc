@@ -6,12 +6,12 @@ Input(a);
 Input(b);
 c = 0;
 
-While {a <= b | b <= a} Do
-    If {a < b} Then
-        b = b - a;  $ useless comment
-    Else
-        a = a - b;  $ useless comment 2
-    End;
+While {b <= a} Do
+    a = a - b;  $ part 1
+End;
+
+While {a < b} Do
+    b = b - a;  $ part 2
 End;
 
 c = a;

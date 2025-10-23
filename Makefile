@@ -11,7 +11,7 @@ MORE_DIR = more
 # main variables
 LEXER = $(SRC_DIR)/LexicalAnalyzer.flex
 MAIN_CLASS = Main
-JAR_NAME = part1.jar
+JAR_NAME = part2.jar
 JAVA_FILES = $(SRC_DIR)/*.java
 TEST_FILES = $(TEST_DIR)/*.java
 
