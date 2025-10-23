@@ -75,7 +75,7 @@ The complete **Javadoc** is hosted on Github Pages. It is available here:
 To generate documentation:
 
 ```sh
-javadoc -d doc src/*.java  # use -private flag to show `all members`
+javadoc -Xdoclint:none -html5 -d doc src/*.java  # use -private flag to show `all members`
 ```
 
 - `-d doc`: output folder for HTML doc files.
