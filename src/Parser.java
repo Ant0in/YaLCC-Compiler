@@ -7,6 +7,27 @@
  */
 public class Parser {
 
+    /** Enumeration of non-terminal symbols in the YaLCC grammar. */
+    public enum NonTerminal {
+        PROGRAM,
+        CODE,
+        INSTRUCTION,
+        ASSIGN,
+        IF,
+        WHILE,
+        OUTPUT,
+        INPUT,
+        COND,
+        COND_IMPL,
+        COND_BASE,
+        EXPR_ARITH,
+        EXPR_ADDSUB,
+        EXPR_MULDIV,
+        EXPR_UNARY,
+        EXPR_PRIMARY,
+        UNARY_MINUS
+    }
+
     /** The lexical analyzer providing tokens for parsing. */
     private final LexicalAnalyzer lexer;
 
@@ -51,8 +72,8 @@ public class Parser {
      * @param name the name of the non-terminal
      * @return a Symbol representing the non-terminal
      */
-    private Symbol dummy(String name) {
-        return new Symbol(null, -1, -1, name);
+    private Symbol dummy(NonTerminal nt) {
+        return new Symbol(null, -1, -1, nt.toString());
     }
 
     /**
@@ -63,7 +84,7 @@ public class Parser {
     public ParseTree parseProgram() throws Exception {
 
         // create the parse tree node for Program
-        ParseTree root = new ParseTree(dummy("Program"));
+        ParseTree root = new ParseTree(dummy(NonTerminal.PROGRAM));
 
         // use the production Program → Prog PROGNAME Is Code End
         root.setRuleNumber(1);
@@ -87,7 +108,7 @@ public class Parser {
     private ParseTree parseCode() throws Exception {
 
         // create the parse tree node for Code
-        ParseTree node = new ParseTree(dummy("Code"));
+        ParseTree node = new ParseTree(dummy(NonTerminal.CODE));
 
         switch (currentToken.getType()) {
 
@@ -120,7 +141,7 @@ public class Parser {
     private ParseTree parseInstruction() throws Exception {
 
         // create the parse tree node for Instruction
-        ParseTree node = new ParseTree(dummy("Instruction"));
+        ParseTree node = new ParseTree(dummy(NonTerminal.INSTRUCTION));
 
         // use the production Instruction → Assign | If | While | Output | Input
         switch (currentToken.getType()) {
@@ -144,7 +165,7 @@ public class Parser {
     private ParseTree parseAssign() throws Exception {
 
         // create the parse tree node for Assign
-        ParseTree node = new ParseTree(dummy("Assign"));
+        ParseTree node = new ParseTree(dummy(NonTerminal.ASSIGN));
         node.setRuleNumber(9);
 
         node.addChild(new ParseTree(currentToken));  // add VarName node
@@ -164,7 +185,7 @@ public class Parser {
     private ParseTree parseIf() throws Exception {
 
         // create the parse tree node for If
-        ParseTree node = new ParseTree(dummy("If"));
+        ParseTree node = new ParseTree(dummy(NonTerminal.IF));
 
         match(LexicalUnit.IF);
         match(LexicalUnit.LBRACK);
@@ -214,7 +235,7 @@ public class Parser {
     private ParseTree parseWhile() throws Exception {
 
         // create the parse tree node for While
-        ParseTree node = new ParseTree(dummy("While"));
+        ParseTree node = new ParseTree(dummy(NonTerminal.WHILE));
         node.setRuleNumber(12);
 
         match(LexicalUnit.WHILE);
@@ -237,7 +258,7 @@ public class Parser {
     private ParseTree parseOutput() throws Exception {
 
         // create the parse tree node for Output
-        ParseTree node = new ParseTree(dummy("Output"));
+        ParseTree node = new ParseTree(dummy(NonTerminal.OUTPUT));
         node.setRuleNumber(13);
 
         match(LexicalUnit.PRINT);
@@ -258,7 +279,7 @@ public class Parser {
     private ParseTree parseInput() throws Exception {
 
         // create the parse tree node for Input
-        ParseTree node = new ParseTree(dummy("Input"));
+        ParseTree node = new ParseTree(dummy(NonTerminal.INPUT));
         node.setRuleNumber(14);
 
         match(LexicalUnit.INPUT);
@@ -290,7 +311,7 @@ public class Parser {
         // left is the CondBase, right is the optional CondImpl
         // this uses left recursion elimination
         ParseTree left = parseCondBase();
-        ParseTree node = new ParseTree(dummy("CondImpl"));
+        ParseTree node = new ParseTree(dummy(NonTerminal.COND_IMPL));
 
         // check for implication
         if (currentToken.getType() == LexicalUnit.IMPLIES) {
@@ -299,7 +320,7 @@ public class Parser {
             match(LexicalUnit.IMPLIES);
             ParseTree right = parseCondImpl();  // recursive call for right side
             node.addChild(left);  // add left CondBase
-            node.addChild(new ParseTree(dummy("->")));  // add implication symbol
+            node.addChild(new ParseTree(new Symbol(LexicalUnit.IMPLIES)));
             node.addChild(right);  // add right CondImpl
 
         // no implication, just return the left CondBase
@@ -320,7 +341,7 @@ public class Parser {
     private ParseTree parseCondBase() throws Exception {
 
         // create the parse tree node for CondBase
-        ParseTree node = new ParseTree(dummy("CondBase"));
+        ParseTree node = new ParseTree(dummy(NonTerminal.COND_BASE));
 
         // check for pipe
         if (currentToken.getType() == LexicalUnit.PIPE) {
@@ -381,13 +402,14 @@ public class Parser {
             ParseTree right = parseExprMulDiv();
 
             // create a new parent node for the addition/subtraction
-            parent = new ParseTree(dummy("ExprArith"));
+            parent = new ParseTree(dummy(NonTerminal.EXPR_ADDSUB));
             // ?? in the future, might be interesting to add proper rule numbers for + and -
             parent.setRuleNumber(op == LexicalUnit.PLUS ? 20 : 20);
             parent.addChild(node);
-            parent.addChild(new ParseTree(dummy(op == LexicalUnit.PLUS ? "+" : "-")));
+            parent.addChild(new ParseTree(new Symbol(op)));
             parent.addChild(right);
             node = parent;
+
         }
 
         return node;
@@ -412,12 +434,12 @@ public class Parser {
             LexicalUnit op = currentToken.getType();
             match(op);
             ParseTree right = parseExprUnary();
-            parent = new ParseTree(dummy("ExprMulDiv"));
+            parent = new ParseTree(dummy(NonTerminal.EXPR_MULDIV));
 
             // ?? in the future, might be interesting to add proper rule numbers for * and /
             parent.setRuleNumber(op == LexicalUnit.TIMES ? 21 : 21);
             parent.addChild(node);
-            parent.addChild(new ParseTree(dummy(op == LexicalUnit.TIMES ? "*" : "/")));
+            parent.addChild(new ParseTree(new Symbol(op)));
             parent.addChild(right);
             node = parent;
 
@@ -438,7 +460,7 @@ public class Parser {
         if (currentToken.getType() == LexicalUnit.MINUS) {
 
             match(LexicalUnit.MINUS);
-            ParseTree node = new ParseTree(dummy("UnaryMinus"));
+            ParseTree node = new ParseTree(dummy(NonTerminal.UNARY_MINUS));
             node.setRuleNumber(22);
             node.addChild(parseExprPrimary());  // add ExprPrimary tree
             return node;

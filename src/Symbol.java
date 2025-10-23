@@ -194,22 +194,33 @@
         return res;
     }
 
+    private static String escapeLaTeX(String s) {
+        if (s == null) return "";
+        return s.replace("\\", "\\textbackslash ")
+                .replace("&", "\\&")
+                .replace("%", "\\%")
+                .replace("$", "\\$")
+                .replace("#", "\\#")
+                .replace("_", "\\_")
+                .replace("{", "\\{")
+                .replace("}", "\\}")
+                .replace("~", "\\textasciitilde ")
+                .replace("^", "\\textasciicircum ");
+    }
+
     /**
-     * Returns a LaTeX-compatible string representation of the symbol.
-     * 
-     * @return a string representation of the symbol suitable for LaTeX.
+     * Return a LaTeX-friendly string for this symbol.
      */
     public String toTexString() {
-
-        // !! copilot wrote this, I don't know if it's exactly what we want, review needed !!
-
-        final String value = this.value != null ? this.value.toString() : "null";
-        if (this.isTerminal()) {
-            final String type = this.type != null ? this.type.toString() : "null";
-            return "\\texttt{" + value + "}\\\\\\textit{" + type + "}"; // The longest keyword has length 7
+        String valStr = escapeLaTeX(value != null ? value.toString() : "");
+        if (isTerminal()) {
+            String typeStr = escapeLaTeX(type != null ? type.toString() : "");
+            return "{\\texttt{" + valStr + "} \\textit{" + typeStr + "}}";
+        } else {
+            return "{\\textbf{Non-terminal symbol:} " + valStr + "}";
         }
-        return  "\\textbf{Non-terminal symbol:} " + value;
-
     }
+
+
 
 }

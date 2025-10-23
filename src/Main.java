@@ -69,6 +69,7 @@ public class Main {
 
             // print leftmost derivation rule numbers
             printRuleNumbers(tree);
+            System.out.println();
 
             // if LaTeX output requested, write to file
             if (latexFile != null) {
@@ -79,13 +80,19 @@ public class Main {
 
     }
 
+    /**
+     * Writes the LaTeX representation of the parse tree to a file.
+     * @param tree the parse tree
+     * @param latexFile the output LaTeX file
+     */
     private static void writeLaTeXToFile(ParseTree tree, String latexFile) {
 
+        // create a file and write LaTeX content
         try (FileWriter fw = new FileWriter(latexFile)) {
             fw.write(tree.toLaTeX());
-            System.out.println("LaTeX output written to " + latexFile);
+            System.out.println("[i] LaTeX output written to " + latexFile);
         } catch (IOException e) {
-            System.err.println("Error writing LaTeX file: " + e.getMessage());
+            System.err.println("[e] Error writing LaTeX file: " + e.getMessage());
         }
 
     }
