@@ -3,7 +3,7 @@
 <!-- pretty badges -->
 <div align="center">
   <img src="https://img.shields.io/badge/Language-Java-red" alt="Language Badge"/>
-  <img src="https://img.shields.io/badge/Version-1.0.2-blue" alt="Version Badge">
+  <img src="https://img.shields.io/badge/Version-1.1.0-blue" alt="Version Badge">
   <img src="https://img.shields.io/badge/License-MIT-dark_green.svg" alt="License Badge"/>
   <img src="https://img.shields.io/badge/School-ULB-yellow" alt="School Badge"/>
   <img src="https://github.com/Ant0in/YaLCC-Compiler/actions/workflows/ci.yml/badge.svg" alt="Build Status"/>
@@ -14,7 +14,7 @@
 
 # 🖋️ YaLCC Compiler
 
-Welcome to the **YaLCC compiler**! This project is part of the **Language Theory course INFO—F403** at `ULB`. It implements the **lexical analysis** phase for a toy programming language called **YaLCC**, turning source code into a stream of tokens for later parsing.
+Welcome to the **YaLCC compiler**! This project is part of the **Language Theory course INFO—F403** at `ULB`. It implements the **lexical analysis** and the **parsing**, constructing the **recursive descent parse trees** for a toy programming language called **YaLCC**.
 
 <div align="center">
   <img src="more/lexer_demo.svg" alt="lexer demo" width="600"/>
@@ -26,9 +26,11 @@ Welcome to the **YaLCC compiler**! This project is part of the **Language Theory
 This Java project provides:
 
 - A **lexer** generated with **JFlex**.
-- Recognition of **keywords**, **identifiers**, **numbers**, **operators**, and **comments**.
+- **Recursive-descent parser** generating parse trees for YaLCC.
+- Tracking of **leftmost derivation rule numbers**.
+- Optional **LaTeX export** for visualizing parse trees using `forest` or `tikz` packages.
 
-For more detailed problem specifications and additional information, please refer to: [**`./more/F403project1.pdf`**](more/F403project1.pdf) or to the report [**`./doc/report/infof403_part1_report.pdf`**](doc/report/infof403_part1_report.pdf).
+For more detailed problem specifications and additional information, please refer to: [**`./more/F403project2.pdf`**](more/F403project2.pdf) or to the report [**`./doc/report/infof403_part1_report.pdf`**](doc/report/infof403_part1_report.pdf).
 
 ## ⚙️ Installation
 
@@ -56,13 +58,26 @@ Alternatively, you can compile the project directly using `javac`.
 
 ## 🛠️ Usage
 
-### Running the Lexer
+### Running the Parser
 
-To run the lexer on a source file, use:
+To run the parser on a source file, use:
 
 ```sh
-java -jar dist/part1.jar test/<sourcefile>.ycc
+java -jar dist/part2.jar test/<sourcefile>.ycc
 ```
+
+You will see the leftmost derivation rule numbers printed to the console.
+
+### Exporting LaTeX Parse Trees
+
+Optionally, you can export the parse tree to a LaTeX file:
+
+```sh
+java -jar dist/part2.jar [-wt output.tex] test/<sourcefile>.ycc
+```
+
+- **`output.tex`** will contain a complete LaTeX document with the parse tree visualization.
+- You can compile it using `pdflatex` or your preferred LaTeX engine.
 
 ## 📚 Documentation
 
@@ -72,7 +87,13 @@ The complete **Javadoc** is hosted on Github Pages. It is available here:
 
 ## ✨ Generating Javadoc
 
-To generate documentation:
+To generate the Javadoc, simply run:
+
+```sh
+make javadoc
+```
+
+Alternatively, you can do it by hand, using:
 
 ```sh
 javadoc -Xdoclint:none -html5 -d doc src/*.java  # use -private flag to show `all members`
