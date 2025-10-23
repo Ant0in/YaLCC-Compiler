@@ -17,6 +17,7 @@ TEST_FILES = $(TEST_DIR)/*.java
 
 # path to junit standalone jar (must be downloaded and placed in lib/)
 JUNIT_JAR = $(LIB_DIR)/junit-platform-console-standalone.jar
+JUNIT_URL = https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.10.1/junit-platform-console-standalone-1.10.1.jar
 
 # base rule
 all: dirs jar
@@ -52,7 +53,7 @@ junit-jar:
 	@mkdir -p $(LIB_DIR)
 	@if [ ! -f $(JUNIT_JAR) ]; then \
 		echo "[i] JUnit JAR not found, downloading...\n"; \
-		curl -L -o $(JUNIT_JAR) https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.10.1/junit-platform-console-standalone-1.10.1.jar; \
+		curl -L -o $(JUNIT_JAR) $(JUNIT_URL); \
 	else \
 		echo "[i] JUnit JAR found."; \
 	fi
