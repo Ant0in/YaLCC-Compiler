@@ -1,1 +1,1 @@
-Input(b)
+Prog IFELSE Is If { x == 0 } Then Else End; End
