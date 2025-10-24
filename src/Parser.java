@@ -9,23 +9,9 @@ public class Parser {
 
     /** Enumeration of non-terminal symbols in the YaLCC grammar. */
     public enum NonTerminal {
-        PROGRAM,
-        CODE,
-        INSTRUCTION,
-        ASSIGN,
-        IF,
-        WHILE,
-        OUTPUT,
-        INPUT,
-        COND,
-        COND_IMPL,
-        COND_BASE,
-        EXPR_ARITH,
-        EXPR_ADDSUB,
-        EXPR_MULDIV,
-        EXPR_UNARY,
-        EXPR_PRIMARY,
-        UNARY_MINUS
+        PROGRAM, CODE, INSTRUCTION, ASSIGN, IF, WHILE, OUTPUT, INPUT,
+        COND_IMPL, COND_COMP, COND_ATOM, EXPR_ARITH, EXPR_ADDSUB, EXPR_MULDIV,
+        EXPR_UNARY, EXPR_PRIMARY, UNARY_MINUS
     }
 
     /** The lexical analyzer providing tokens for parsing. */
@@ -77,23 +63,22 @@ public class Parser {
     }
 
     /**
-     * Production rule for Program → Prog PROGNAME Is Code End
+     * Parse the entire program.
      * @return the parse tree node for Program
      * @throws Exception if a syntax error occurs
      */
     public ParseTree parseProgram() throws Exception {
 
         // create the parse tree node for Program
+        // use the production: Program → Prog PROGNAME Is Code End [1]
         ParseTree root = new ParseTree(dummy(NonTerminal.PROGRAM));
-
-        // use the production Program → Prog PROGNAME Is Code End
         root.setRuleNumber(1);
 
         match(LexicalUnit.PROG);
-        root.addChild(new ParseTree(currentToken));  // add PROGNAME node
+        root.addChild(new ParseTree(currentToken));
         match(LexicalUnit.PROGNAME);
         match(LexicalUnit.IS);
-        root.addChild(parseCode());  // add Code tree
+        root.addChild(parseCode());
         match(LexicalUnit.END);
 
         return root;
@@ -101,56 +86,81 @@ public class Parser {
     }
 
     /**
-     * Production rule for Code → Instruction ; Code | ε
+     * Parse code block.
      * @return the parse tree node for Code
      * @throws Exception if a syntax error occurs
      */
     private ParseTree parseCode() throws Exception {
 
         // create the parse tree node for Code
+        // use the productions: Code → Instruction ; Code [2] if applicable
+        // else Code → ε [3]
         ParseTree node = new ParseTree(dummy(NonTerminal.CODE));
 
         switch (currentToken.getType()) {
 
-            // if the current token indicates the start of an instruction
             case VARNAME, IF, WHILE, PRINT, INPUT -> {
 
-                // use the production Code → Instruction ; Code
                 node.setRuleNumber(2);
+
                 node.addChild(parseInstruction());
-                // expect a semicolon after the instruction
                 match(LexicalUnit.SEMI);
                 node.addChild(parseCode());
 
             }
 
-            default -> {
-                // use the production Code → ε
-                node.setRuleNumber(3);
-            }
+            default -> node.setRuleNumber(3);
         }
 
         return node;
+
     }
 
     /**
-     * Production rule for Instruction → Assign | If | While | Output | Input
+     * Parse instruction statement.
      * @return the parse tree node for Instruction
      * @throws Exception if a syntax error occurs
      */
     private ParseTree parseInstruction() throws Exception {
 
         // create the parse tree node for Instruction
+        // use the appropriate production based on the current token
         ParseTree node = new ParseTree(dummy(NonTerminal.INSTRUCTION));
 
-        // use the production Instruction → Assign | If | While | Output | Input
         switch (currentToken.getType()) {
-            case VARNAME -> node.addChild(parseAssign());
-            case IF -> node.addChild(parseIf());
-            case WHILE -> node.addChild(parseWhile());
-            case PRINT -> node.addChild(parseOutput());
-            case INPUT -> node.addChild(parseInput());
+
+            case VARNAME -> {
+                // use the production Varname → Assign [4]
+                node.setRuleNumber(4);
+                node.addChild(parseAssign());
+            }
+
+            case IF -> {
+                // use the production If → If [5]
+                node.setRuleNumber(5);
+                node.addChild(parseIf());
+            }
+
+            case WHILE -> {
+                // use the production While → While [6]
+                node.setRuleNumber(6);
+                node.addChild(parseWhile());
+            }
+
+            case PRINT -> {
+                // use the production Output → Output [7]
+                node.setRuleNumber(7);
+                node.addChild(parseOutput());
+            }
+
+            case INPUT -> {
+                // use the production Input → Input [8]
+                node.setRuleNumber(8);
+                node.addChild(parseInput());
+            }
+
             default -> throw new Exception("Unexpected token " + currentToken.getType());
+
         }
 
         return node;
@@ -158,27 +168,28 @@ public class Parser {
     }
 
     /**
-     * Production rule for Assign → VarName = ExprArith
+     * Parse assignment statement.
      * @return the parse tree node for Assign
      * @throws Exception if a syntax error occurs
      */
     private ParseTree parseAssign() throws Exception {
 
         // create the parse tree node for Assign
+        // use the production: VARNAME → VarName = ExprArith [9]
         ParseTree node = new ParseTree(dummy(NonTerminal.ASSIGN));
         node.setRuleNumber(9);
 
-        node.addChild(new ParseTree(currentToken));  // add VarName node
+        node.addChild(new ParseTree(currentToken));
         match(LexicalUnit.VARNAME);
         match(LexicalUnit.ASSIGN);
-        node.addChild(parseExprArith());  // add ExprArith tree
+        node.addChild(parseExprArith());
 
         return node;
 
     }
 
     /**
-     * Production rule for If → If { Cond } Then Code End | If { Cond } Then Code Else Code End
+     * Parse If statement.
      * @return the parse tree node for If
      * @throws Exception if a syntax error occurs
      */
@@ -189,10 +200,10 @@ public class Parser {
 
         match(LexicalUnit.IF);
         match(LexicalUnit.LBRACK);
-        node.addChild(parseCond());  // add Cond tree
+        node.addChild(parseCond());
         match(LexicalUnit.RBRACK);
         match(LexicalUnit.THEN);
-        node.addChild(parseCode());  // add Code tree (if-then branch)
+        node.addChild(parseCode());
 
         // check for optional else branch
         parseOptionalElse(node);
@@ -212,14 +223,14 @@ public class Parser {
 
         if (currentToken.getType() == LexicalUnit.ELSE) {
 
-            // use the production If → If { Cond } Then Code Else Code End
+            // use the production If → If { Cond } Then Code Else Code End [11]
             node.setRuleNumber(11);
             match(LexicalUnit.ELSE);
-            node.addChild(parseCode());  // add Code tree (else branch)
+            node.addChild(parseCode());
 
         } else {
 
-            // use the production If → If { Cond } Then Code End
+            // use the production If → If { Cond } Then Code End [10]
             node.setRuleNumber(10);
 
         }
@@ -228,22 +239,23 @@ public class Parser {
 
 
     /**
-     * Production rule for While → While { Cond } Do Code End
+     * Parse While statement.
      * @return the parse tree node for While
      * @throws Exception if a syntax error occurs
      */
     private ParseTree parseWhile() throws Exception {
 
         // create the parse tree node for While
+        // use the production: While → While { Cond } Do Code End [12]
         ParseTree node = new ParseTree(dummy(NonTerminal.WHILE));
         node.setRuleNumber(12);
 
         match(LexicalUnit.WHILE);
         match(LexicalUnit.LBRACK);
-        node.addChild(parseCond());  // add Cond tree
+        node.addChild(parseCond());
         match(LexicalUnit.RBRACK);
         match(LexicalUnit.DO);
-        node.addChild(parseCode());  // add Code tree
+        node.addChild(parseCode());
         match(LexicalUnit.END);
 
         return node;
@@ -251,19 +263,20 @@ public class Parser {
     }
 
     /**
-     * Production rule for Output → Print ( VarName )
+     * Parse Output statement.
      * @return the parse tree node for Output
      * @throws Exception if a syntax error occurs
      */
     private ParseTree parseOutput() throws Exception {
 
         // create the parse tree node for Output
+        // use the production: Output → Print ( VarName ) [13]
         ParseTree node = new ParseTree(dummy(NonTerminal.OUTPUT));
         node.setRuleNumber(13);
 
         match(LexicalUnit.PRINT);
         match(LexicalUnit.LPAREN);
-        node.addChild(new ParseTree(currentToken));  // add VarName node (leaf)
+        node.addChild(new ParseTree(currentToken));
         match(LexicalUnit.VARNAME);
         match(LexicalUnit.RPAREN);
 
@@ -272,19 +285,20 @@ public class Parser {
     }
 
     /**
-     * Production rule for Input → Input ( VarName )
+     * Parse Input statement.
      * @return the parse tree node for Input
      * @throws Exception if a syntax error occurs
      */
     private ParseTree parseInput() throws Exception {
 
         // create the parse tree node for Input
+        // use the production: Input → Input ( VarName ) [14]
         ParseTree node = new ParseTree(dummy(NonTerminal.INPUT));
         node.setRuleNumber(14);
 
         match(LexicalUnit.INPUT);
         match(LexicalUnit.LPAREN);
-        node.addChild(new ParseTree(currentToken));  // add VarName node (leaf)
+        node.addChild(new ParseTree(currentToken));
         match(LexicalUnit.VARNAME);
         match(LexicalUnit.RPAREN);
 
@@ -292,82 +306,112 @@ public class Parser {
     }
 
     /**
-     * Production rule for Cond → CondImpl
+     * Parse condition.
      * @return the parse tree node for Cond
      * @throws Exception if a syntax error occurs
      */
     private ParseTree parseCond() throws Exception {
-        return parseCondImpl();
+
+        // create the parse tree node for Cond
+        // use the production: Cond → CondImpl [15]
+        ParseTree node = parseCondImpl();
+        node.setRuleNumber(15);
+
+        return node;
+
     }
 
     /**
-     * Production rule for CondImpl → CondBase [-> CondImpl]?
+     * Parse condition with implication.
      * @return the parse tree node for CondImpl
      * @throws Exception if a syntax error occurs
      */
     private ParseTree parseCondImpl() throws Exception {
 
         // create the parse tree node for CondImpl
-        // left is the CondBase, right is the optional CondImpl
-        // this uses left recursion elimination
-        ParseTree left = parseCondBase();
-        ParseTree node = new ParseTree(dummy(NonTerminal.COND_IMPL));
+        // use the production: CondAtom -> CondImpl [16] / CondAtom [16']
+        ParseTree left = parseCondComp();
 
         // check for implication
         if (currentToken.getType() == LexicalUnit.IMPLIES) {
 
-            node.setRuleNumber(16);
+            // this node is an implication
+            ParseTree node = new ParseTree(dummy(NonTerminal.COND_IMPL));
             match(LexicalUnit.IMPLIES);
-            ParseTree right = parseCondImpl();  // recursive call for right side
-            node.addChild(left);  // add left CondBase
-            node.addChild(new ParseTree(new Symbol(LexicalUnit.IMPLIES)));
-            node.addChild(right);  // add right CondImpl
-
-        // no implication, just return the left CondBase
-        } else {
             node.setRuleNumber(16);
-            node.addChild(left);  // add left CondBase
+
+            // right will be handled recursively
+            ParseTree right = parseCond();
+
+            // we have a: cond -> cond
+            node.addChild(left);
+            node.addChild(new ParseTree(new Symbol(LexicalUnit.IMPLIES)));
+            node.addChild(right);
+
+            return node;
+
         }
 
-        return node;
+        // no implication, just return a condComp
+        return left;
 
     }
 
     /**
-     * Production rule for CondBase → | Cond | ExprArith Comp ExprArith
-     * @return the parse tree node for CondBase
+     * Production rule for CondComp → CondBase ( == | <= | < ) CondBase
+     * @return the parse tree node for CondComp
      * @throws Exception if a syntax error occurs
      */
-    private ParseTree parseCondBase() throws Exception {
+    private ParseTree parseCondComp() throws Exception {
+        
+        ParseTree left = parseCondAtom();
 
-        // create the parse tree node for CondBase
-        ParseTree node = new ParseTree(dummy(NonTerminal.COND_BASE));
+        while (currentToken.getType() == LexicalUnit.EQUAL ||
+               currentToken.getType() == LexicalUnit.SMALEQ ||
+               currentToken.getType() == LexicalUnit.SMALLER) {
+
+            LexicalUnit op = currentToken.getType();
+            match(op);
+            ParseTree right = parseCondAtom();
+
+            // create a new node for the comparison
+            ParseTree node = new ParseTree(dummy(NonTerminal.COND_COMP));
+            node.setRuleNumber(18);
+            node.addChild(left);
+            node.addChild(new ParseTree(new Symbol(op)));
+            node.addChild(right);
+
+            left = node;  // left associativity
+
+        }
+
+        return left;
+
+    }
+
+    /**
+     * Production rule for CondAtom → | CondImpl | | ExprArith
+     * @return the parse tree node for CondAtom
+     * @throws Exception if a syntax error occurs
+     */
+    private ParseTree parseCondAtom() throws Exception {
 
         // check for pipe
         if (currentToken.getType() == LexicalUnit.PIPE) {
+
+            // use the production CondBase → | Cond |
+            ParseTree node = new ParseTree(dummy(NonTerminal.COND_ATOM));
+            match(LexicalUnit.PIPE);
             node.setRuleNumber(17);
+            node.addChild(parseCond());
             match(LexicalUnit.PIPE);
-            node.addChild(parseCond());  // add Cond tree
-            match(LexicalUnit.PIPE);
+            return node;
 
         } else {
 
-            // if condition is not pipe, it must be ExprArith Comp ExprArith
-            node.setRuleNumber(18);
-            node.addChild(parseExprArith());  // add first ExprArith tree
-
-            // match comparison operator
-            switch (currentToken.getType()) {
-                case EQUAL -> match(LexicalUnit.EQUAL);
-                case SMALEQ -> match(LexicalUnit.SMALEQ);
-                case SMALLER -> match(LexicalUnit.SMALLER);
-                default -> throw new Exception("Expected comparison operator, got " + currentToken.getType());
-            }
-
-            node.addChild(parseExprArith());  // add second ExprArith tree
+            return parseExprArith();  // parse ExprArith Comp ExprArith
+            
         }
-
-        return node;
 
     }
 

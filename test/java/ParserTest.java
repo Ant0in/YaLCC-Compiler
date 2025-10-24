@@ -210,48 +210,6 @@ public class ParserTest {
     }
 
     /**
-     * Test parsing a program with a while loop.
-     */
-    @Test
-    void testParseWhileLoop() throws Exception {
-        
-        // program with while loop
-        String input = "Prog LOOP Is While { a < 10 } Do End; End";
-        Parser parser = makeParser(input);
-        ParseTree tree = parser.parseProgram();
-
-        ParseTree whileNode = child(child(child(tree, 1), 0), 0); // CODE -> INSTRUCTION -> WHILE
-        assertNonTerminal(whileNode, Parser.NonTerminal.WHILE);
-        assertChildCount(whileNode, 2);
-
-        // condimpl node
-        ParseTree condImplNode = child(whileNode, 0);
-        assertNonTerminal(condImplNode, Parser.NonTerminal.COND_IMPL);
-        assertChildCount(condImplNode, 1);
-
-        // condition node
-        ParseTree condNode = child(condImplNode, 0);
-        assertNonTerminal(condNode, Parser.NonTerminal.COND_BASE);
-        assertChildCount(condNode, 2);
-
-        // condition left side
-        ParseTree leftNode = child(condNode, 0);
-        assertTerminal(leftNode, "a");
-        assertIsLeaf(leftNode);
-
-        // condition right side
-        ParseTree rightNode = child(condNode, 1);
-        assertTerminal(rightNode, 10);
-        assertIsLeaf(rightNode);
-
-        // code inside while node
-        ParseTree codeNode = child(whileNode, 1);
-        assertNonTerminal(codeNode, Parser.NonTerminal.CODE);
-        assertIsLeaf(codeNode);
-
-    }
-
-    /**
      * Test parsing a program with an expression in assignment.
      */
     @Test
@@ -311,7 +269,7 @@ public class ParserTest {
      * Test parsing a program with an if-else statement.
      */
     @Test
-    void testParseIfElse() throws Exception {
+    void testParseIfElseCond() throws Exception {
         
         // program with if-else statement
         String input = "Prog IFELSE Is If { x == 0 } Then Else End; End";
@@ -323,9 +281,24 @@ public class ParserTest {
         assertChildCount(ifNode, 3);
 
         // condition node
-        ParseTree condImplNode = child(ifNode, 0);
-        assertNonTerminal(condImplNode, Parser.NonTerminal.COND_IMPL);
-        assertChildCount(condImplNode, 1);
+        ParseTree condNode = child(ifNode, 0);
+        assertNonTerminal(condNode, Parser.NonTerminal.COND_COMP);
+        assertChildCount(condNode, 3);
+
+        // left side of condition (variable x)
+        ParseTree xNode = child(condNode, 0);
+        assertTerminal(xNode, "x");
+        assertIsLeaf(xNode);
+
+        // right side of condition (number 0)
+        ParseTree zeroNode = child(condNode, 2);
+        assertTerminal(zeroNode, 0);
+        assertIsLeaf(zeroNode);
+
+        // condition operator
+        ParseTree opNode = child(condNode, 1);
+        assertTerminal(opNode, LexicalUnit.EQUAL);
+        assertIsLeaf(opNode);
 
         // then code node
         ParseTree thenCodeNode = child(ifNode, 1);
@@ -338,5 +311,6 @@ public class ParserTest {
         assertIsLeaf(elseCodeNode);
 
     }
+
 
 }

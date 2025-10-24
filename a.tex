@@ -1,0 +1,14 @@
+\documentclass[border=5pt]{standalone}
+
+\usepackage{tikz}
+\usepackage{forest}
+
+\begin{document}
+
+\begin{forest}for tree={rectangle, draw, l sep=20pt}[{{\textbf{Non-terminal symbol:} PROGRAM}} [{{\texttt{COND} \textit{PROGNAME}}} ][{{\textbf{Non-terminal symbol:} CODE}} [{{\textbf{Non-terminal symbol:} INSTRUCTION}} [{{\textbf{Non-terminal symbol:} IF}} [{{\textbf{Non-terminal symbol:} COND\_IMPL}} [{{\textbf{Non-terminal symbol:} COND\_COMP}} [{{\texttt{b} \textit{VARNAME}}} ][{{\texttt{} \textit{SMALLER}}} ][{{\textbf{Non-terminal symbol:} UNARY\_MINUS}} [{{\texttt{a} \textit{VARNAME}}} ]]][{{\texttt{} \textit{IMPLIES}}} ][{{\textbf{Non-terminal symbol:} COND\_ATOM}} [{{\textbf{Non-terminal symbol:} COND\_IMPL}} [{{\textbf{Non-terminal symbol:} COND\_COMP}} [{{\texttt{a} \textit{VARNAME}}} ][{{\texttt{} \textit{SMALLER}}} ][{{\texttt{b} \textit{VARNAME}}} ]][{{\texttt{} \textit{IMPLIES}}} ][{{\textbf{Non-terminal symbol:} COND\_COMP}} [{{\texttt{a} \textit{VARNAME}}} ][{{\texttt{} \textit{EQUAL}}} ][{{\texttt{10} \textit{NUMBER}}} ]]]]][{{\textbf{Non-terminal symbol:} CODE}} ]]][{{\textbf{Non-terminal symbol:} CODE}} ]]];
+\end{forest}
+
+\end{document}
+%% Local Variables:
+%% TeX-engine: pdflatex
+%% End:
