@@ -114,12 +114,17 @@ public class Main {
             Parser parser = new Parser(lexer);
             tree = parser.parseProgram();
 
-        } catch (IOException e) {
-            // file reading error
-            System.err.println("File error: " + e.getMessage());
-        } catch (Exception e) {
-            // TODO: make more specific error so that we don't catch all exceptions
-            System.err.println("Parsing error: " + e.getMessage());
+        } catch (ParseException pe) {
+
+            // handle parsing errors
+            System.err.println("[e] Parse Error at line " + pe.getLine() + ", column " + pe.getColumn() + ": " + pe.getMessage());
+            System.err.println("    Expected: " + pe.getExpected() + ", Found: " + pe.getFound());
+
+        } catch (IOException ioe) {
+
+            // handle I/O errors
+            System.err.println("[e] I/O Error: " + ioe.getMessage());
+
         }
     
         return tree;

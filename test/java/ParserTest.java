@@ -312,5 +312,91 @@ public class ParserTest {
 
     }
 
+    /**
+     * Test parsing a program with a complex condition.
+     */
+    @Test
+    void testParseComplexCondition() throws Exception {
+        
+        // program with complex condition
+        String input = "Prog COMPLEX Is If { c -> | a < 10 -> b < 10 | } Then End; End";
+        Parser parser = makeParser(input);
+        ParseTree tree = parser.parseProgram();
+
+        ParseTree ifNode = child(child(child(tree, 1), 0), 0); // CODE -> INSTRUCTION -> IF
+        assertNonTerminal(ifNode, Parser.NonTerminal.IF);
+        assertChildCount(ifNode, 2);
+
+        // c -> condition component
+        ParseTree condImplNode = child(ifNode, 0);
+        assertNonTerminal(condImplNode, Parser.NonTerminal.COND_IMPL);
+        assertChildCount(condImplNode, 3);
+
+        // c variable, implies and pipe condition
+        ParseTree cNode = child(condImplNode, 0);
+        assertTerminal(cNode, "c");
+        assertIsLeaf(cNode);
+
+        // implies operator
+        ParseTree impliesNode = child(condImplNode, 1);
+        assertTerminal(impliesNode, LexicalUnit.IMPLIES);
+        assertIsLeaf(impliesNode);
+
+        // pipe condition
+        ParseTree pipeCondNode = child(condImplNode, 2);
+        assertNonTerminal(pipeCondNode, Parser.NonTerminal.COND_ATOM);
+        assertChildCount(pipeCondNode, 1);
+
+        // cond in pipe (which is a cond_impl)
+        ParseTree pipeCondImplNode = child(pipeCondNode, 0);
+        assertNonTerminal(pipeCondImplNode, Parser.NonTerminal.COND_IMPL);
+        assertChildCount(pipeCondImplNode, 3);
+
+        // first condition a < 10
+        ParseTree firstCondNode = child(pipeCondImplNode, 0);
+        assertNonTerminal(firstCondNode, Parser.NonTerminal.COND_COMP);
+        assertChildCount(firstCondNode, 3);
+
+        // left side of condition (variable a)
+        ParseTree aNode = child(firstCondNode, 0);
+        assertTerminal(aNode, "a");
+        assertIsLeaf(aNode);
+
+        // condition operator
+        ParseTree opNode = child(firstCondNode, 1);
+        assertTerminal(opNode, LexicalUnit.SMALLER);
+        assertIsLeaf(opNode);
+
+        // right side of condition (number 10)
+        ParseTree tenNode = child(firstCondNode, 2);
+        assertTerminal(tenNode, 10);
+        assertIsLeaf(tenNode);
+
+        // second condition b < 10
+        ParseTree secondCondNode = child(pipeCondImplNode, 2);
+        assertNonTerminal(secondCondNode, Parser.NonTerminal.COND_COMP);
+        assertChildCount(secondCondNode, 3);
+
+        // left side of condition (variable b)
+        ParseTree bNode = child(secondCondNode, 0);
+        assertTerminal(bNode, "b");
+        assertIsLeaf(bNode);
+
+        // condition operator
+        ParseTree opNode2 = child(secondCondNode, 1);
+        assertTerminal(opNode2, LexicalUnit.SMALLER);
+        assertIsLeaf(opNode2);
+
+        // right side of condition (number 10)
+        ParseTree tenNode2 = child(secondCondNode, 2);
+        assertTerminal(tenNode2, 10);
+        assertIsLeaf(tenNode2);
+
+        // implies operator between conditions
+        ParseTree impliesNode2 = child(pipeCondImplNode, 1);
+        assertTerminal(impliesNode2, LexicalUnit.IMPLIES);
+        assertIsLeaf(impliesNode2);
+
+    }
 
 }

@@ -1,1 +1,1 @@
-Prog COND Is While {a < b} Do b = b + ((b - a) * 5); End; End
+Prog COMPLEX Is If { c -> | a < 10 -> b < 10 | } Then End; End
