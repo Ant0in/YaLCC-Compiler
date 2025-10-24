@@ -1,1 +1,1 @@
-Prog COND Is If {b < -a -> |a < b -> a == 10|} Then End; End
+Prog COND Is While {a < b} Do b = b + ((b - a) * 5); End; End

@@ -1,5 +1,4 @@
 
-
 /**
  * Recursive descent parser for the YaLCC language.
  * Constructs a parse tree based on the provided lexical analyzer.
@@ -237,7 +236,6 @@ public class Parser {
 
     }
 
-
     /**
      * Parse While statement.
      * @return the parse tree node for While
@@ -261,7 +259,7 @@ public class Parser {
         return node;
 
     }
-
+    
     /**
      * Parse Output statement.
      * @return the parse tree node for Output
@@ -330,53 +328,61 @@ public class Parser {
 
         // create the parse tree node for CondImpl
         // use the production: CondAtom -> CondImpl [16] / CondAtom [16']
-        ParseTree left = parseCondComp();
+
+        ParseTree condAtomNode = parseCondAtom();
 
         // check for implication
         if (currentToken.getType() == LexicalUnit.IMPLIES) {
 
             // this node is an implication
             ParseTree node = new ParseTree(dummy(NonTerminal.COND_IMPL));
-            match(LexicalUnit.IMPLIES);
             node.setRuleNumber(16);
+            match(LexicalUnit.IMPLIES);
 
-            // right will be handled recursively
-            ParseTree right = parseCond();
-
-            // we have a: cond -> cond
-            node.addChild(left);
+            node.addChild(condAtomNode);
             node.addChild(new ParseTree(new Symbol(LexicalUnit.IMPLIES)));
-            node.addChild(right);
+            node.addChild(parseCondImpl());
 
             return node;
 
-        }
+        } else {
 
-        // no implication, just return a condComp
-        return left;
+            // this node is just a CondAtom
+            // use the production: CondAtom [16'], which is 16 in essence
+            // ?? might want to make a separate rule number for clarity at some point
+
+            condAtomNode.setRuleNumber(16);
+            return condAtomNode;
+
+        }
 
     }
 
     /**
-     * Production rule for CondComp → CondBase ( == | <= | < ) CondBase
+     * Parse condition comparison.
      * @return the parse tree node for CondComp
      * @throws Exception if a syntax error occurs
      */
     private ParseTree parseCondComp() throws Exception {
         
-        ParseTree left = parseCondAtom();
+        // create the parse tree node for CondComp
+        // use the production: ExprArith Comp ExprArith [19]
+
+        ParseTree left = parseExprArith();
 
         while (currentToken.getType() == LexicalUnit.EQUAL ||
                currentToken.getType() == LexicalUnit.SMALEQ ||
                currentToken.getType() == LexicalUnit.SMALLER) {
 
+            // handle comparison operators
             LexicalUnit op = currentToken.getType();
             match(op);
-            ParseTree right = parseCondAtom();
-
-            // create a new node for the comparison
+            ParseTree right = parseExprArith();
+        
+            // make the comparison node
             ParseTree node = new ParseTree(dummy(NonTerminal.COND_COMP));
-            node.setRuleNumber(18);
+            node.setRuleNumber(19);
+
             node.addChild(left);
             node.addChild(new ParseTree(new Symbol(op)));
             node.addChild(right);
@@ -390,7 +396,7 @@ public class Parser {
     }
 
     /**
-     * Production rule for CondAtom → | CondImpl | | ExprArith
+     * Parse condition atom.
      * @return the parse tree node for CondAtom
      * @throws Exception if a syntax error occurs
      */
@@ -399,33 +405,46 @@ public class Parser {
         // check for pipe
         if (currentToken.getType() == LexicalUnit.PIPE) {
 
-            // use the production CondBase → | Cond |
+            // use the production: | Cond | [17]
             ParseTree node = new ParseTree(dummy(NonTerminal.COND_ATOM));
-            match(LexicalUnit.PIPE);
             node.setRuleNumber(17);
+
+            match(LexicalUnit.PIPE);
             node.addChild(parseCond());
             match(LexicalUnit.PIPE);
+
             return node;
 
         } else {
 
-            return parseExprArith();  // parse ExprArith Comp ExprArith
+            // create the parse tree node for CondAtom
+            // use the production: CondComp [18]
+            ParseTree node = parseCondComp();
+            node.setRuleNumber(18);
+            return node;
             
         }
 
     }
 
     /**
-     * Production rule for ExprArith → ExprAddSub
+     * Parse arithmetic expression.
      * @return the parse tree node for ExprArith
      * @throws Exception if a syntax error occurs
      */
     private ParseTree parseExprArith() throws Exception {
-        return parseExprAddSub();
+
+        // create the parse tree node for ExprArith
+        // use the production: ExprAddSub [20]
+        ParseTree node = parseExprAddSub();
+        node.setRuleNumber(20);
+
+        return node;
+
     }
 
     /**
-     * Production rule for ExprAddSub → ExprMulDiv { (+|-) ExprMulDiv }*
+     * Parse addition and subtraction.
      * @return the parse tree node for ExprAddSub
      * @throws Exception if a syntax error occurs
      */
@@ -434,7 +453,6 @@ public class Parser {
         // left recursion elimination
         // parent is the root for each addition/subtraction
         ParseTree node = parseExprMulDiv();
-        ParseTree parent;
 
         // while there are + or - operators, keep building the tree
         while (currentToken.getType() == LexicalUnit.PLUS || currentToken.getType() == LexicalUnit.MINUS) {
@@ -442,16 +460,16 @@ public class Parser {
             LexicalUnit op = currentToken.getType();
             match(op);
 
-            // parse the next ExprMulDiv (right operand)
             ParseTree right = parseExprMulDiv();
-
-            // create a new parent node for the addition/subtraction
-            parent = new ParseTree(dummy(NonTerminal.EXPR_ADDSUB));
-            // ?? in the future, might be interesting to add proper rule numbers for + and -
+            // create parent node
+            // use production: ExprAddSub → ExprMulDiv { (+|-) ExprMulDiv }* [21]
+            ParseTree parent = new ParseTree(dummy(NonTerminal.EXPR_ADDSUB));
             parent.setRuleNumber(op == LexicalUnit.PLUS ? 20 : 20);
+
             parent.addChild(node);
             parent.addChild(new ParseTree(new Symbol(op)));
             parent.addChild(right);
+
             node = parent;
 
         }
@@ -461,7 +479,7 @@ public class Parser {
     }
 
     /**
-     * Production rule for ExprMulDiv → ExprUnary { (*|/) ExprUnary }*
+     * Parse multiplication and division.
      * @return the parse tree node for ExprMulDiv
      * @throws Exception if a syntax error occurs
      */
@@ -470,21 +488,23 @@ public class Parser {
         // left recursion elimination
         // parent is the root for each multiplication/division
         ParseTree node = parseExprUnary();
-        ParseTree parent;
 
         // while there are * or / operators, keep building the tree
         while (currentToken.getType() == LexicalUnit.TIMES || currentToken.getType() == LexicalUnit.DIVIDE) {
 
             LexicalUnit op = currentToken.getType();
             match(op);
-            ParseTree right = parseExprUnary();
-            parent = new ParseTree(dummy(NonTerminal.EXPR_MULDIV));
 
-            // ?? in the future, might be interesting to add proper rule numbers for * and /
-            parent.setRuleNumber(op == LexicalUnit.TIMES ? 21 : 21);
+            ParseTree right = parseExprUnary();
+            // create parent node
+            // use production: ExprMulDiv → ExprUnary { (*|/) ExprUnary }* [22]
+            ParseTree parent = new ParseTree(dummy(NonTerminal.EXPR_MULDIV));
+            parent.setRuleNumber(22);
+
             parent.addChild(node);
             parent.addChild(new ParseTree(new Symbol(op)));
             parent.addChild(right);
+
             node = parent;
 
         }
@@ -494,7 +514,7 @@ public class Parser {
     }
 
     /**
-     * Production rule for ExprUnary → - ExprPrimary | ExprPrimary
+     * Parse unary expression.
      * @return the parse tree node for ExprUnary
      * @throws Exception if a syntax error occurs
      */
@@ -504,16 +524,19 @@ public class Parser {
         if (currentToken.getType() == LexicalUnit.MINUS) {
 
             match(LexicalUnit.MINUS);
+            // create the parse tree node for unary minus
+            // use the production: - ExprPrimary [23]
             ParseTree node = new ParseTree(dummy(NonTerminal.UNARY_MINUS));
-            node.setRuleNumber(22);
+            node.setRuleNumber(23);
             node.addChild(parseExprPrimary());  // add ExprPrimary tree
             return node;
 
         } else {
 
             // no unary minus, just parse ExprPrimary
+            // use the production: ExprPrimary [24]
             ParseTree node = parseExprPrimary();
-            node.setRuleNumber(23);
+            node.setRuleNumber(24);
             return node;
 
         }
@@ -521,37 +544,20 @@ public class Parser {
     }
 
     /**
-     * Production rule for ExprPrimary → VarName | Number | ( ExprArith )
+     * Parse primary expression.
      * @return the parse tree node for ExprPrimary
      * @throws Exception if a syntax error occurs
      */
     private ParseTree parseExprPrimary() throws Exception {
 
         // create the parse tree node for ExprPrimary
+        // use the appropriate production based on the current token
         ParseTree node;
 
         switch (currentToken.getType()) {
-            case VARNAME -> {
-                // production ExprPrimary → VarName
-                node = new ParseTree(currentToken);
-                node.setRuleNumber(24);
-                match(LexicalUnit.VARNAME);
-            }
-            case NUMBER -> {
-                // production ExprPrimary → Number
-                node = new ParseTree(currentToken);
-                node.setRuleNumber(25);
-                match(LexicalUnit.NUMBER);
-            }
-            case LPAREN -> {
-                // production ExprPrimary → ( ExprArith )
-                match(LexicalUnit.LPAREN);
-                node = parseExprArith();
-                match(LexicalUnit.RPAREN);
-                node.setRuleNumber(26);
-            }
-
-            // unexpected token default case
+            case VARNAME -> { node = new ParseTree(currentToken); node.setRuleNumber(25); match(LexicalUnit.VARNAME); }
+            case NUMBER  -> { node = new ParseTree(currentToken); node.setRuleNumber(26); match(LexicalUnit.NUMBER); }
+            case LPAREN  -> { match(LexicalUnit.LPAREN); node = parseExprArith(); match(LexicalUnit.RPAREN); node.setRuleNumber(27); }
             default -> throw new Exception("Unexpected token in expression: " + currentToken.getType());
         }
 
