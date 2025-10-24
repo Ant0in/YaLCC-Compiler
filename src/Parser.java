@@ -1,4 +1,6 @@
 
+import java.io.IOException;
+
 /**
  * Recursive descent parser for the YaLCC language.
  * Constructs a parse tree based on the provided lexical analyzer.
@@ -24,7 +26,7 @@ public class Parser {
      * @param lexer the lexical analyzer
      * @throws Exception if an error occurs during token retrieval
      */
-    public Parser(LexicalAnalyzer lexer) throws Exception {
+    public Parser(LexicalAnalyzer lexer) throws IOException {
         this.lexer = lexer;
         this.currentToken = lexer.yylex();
     }
@@ -33,9 +35,10 @@ public class Parser {
      * Matches the current token against the expected token type.
      * Advances to the next token if matched; throws an error otherwise.
      * @param expected the expected token type
-     * @throws Exception if the current token does not match the expected type
+     * @throws ParseException if the current token does not match the expected type
+     * @throws IOException if an I/O error occurs during token retrieval
      */
-    private void match(LexicalUnit expected) throws Exception {
+    private void match(LexicalUnit expected) throws ParseException, IOException {
 
         // if current token matches expected, advance to next token
         if (currentToken.getType() == expected) {
@@ -45,16 +48,21 @@ public class Parser {
         } else {
 
             // if current token does not match expected, throw an error
-            // ?? we might want to make more precise error messages later, but for now this will do
 
-            throw new Exception("Syntax error at line " + (currentToken.getLine()) + ", column " + (currentToken.getColumn()) + ": expected " + expected + ", got " + currentToken.getType());
+            throw new ParseException(
+                "Syntax Error: Expected " + expected + " but found " + currentToken.getType(),
+                currentToken.getLine(),
+                currentToken.getColumn(),
+                expected,
+                currentToken.getType()
+            );
         
         }
     }
 
     /**
      * Creates a dummy symbol for non-terminal nodes in the parse tree.
-     * @param name the name of the non-terminal
+     * @param nt the non-terminal symbol
      * @return a Symbol representing the non-terminal
      */
     private Symbol dummy(NonTerminal nt) {
@@ -64,9 +72,10 @@ public class Parser {
     /**
      * Parse the entire program.
      * @return the parse tree node for Program
-     * @throws Exception if a syntax error occurs
+     * @throws ParseException if a syntax error occurs
+     * @throws IOException if an I/O error occurs
      */
-    public ParseTree parseProgram() throws Exception {
+    public ParseTree parseProgram() throws ParseException, IOException {
 
         // create the parse tree node for Program
         // use the production: Program → Prog PROGNAME Is Code End [1]
@@ -87,9 +96,10 @@ public class Parser {
     /**
      * Parse code block.
      * @return the parse tree node for Code
-     * @throws Exception if a syntax error occurs
+     * @throws ParseException if a syntax error occurs
+     * @throws IOException if an I/O error occurs
      */
-    private ParseTree parseCode() throws Exception {
+    private ParseTree parseCode() throws ParseException, IOException {
 
         // create the parse tree node for Code
         // use the productions: Code → Instruction ; Code [2] if applicable
@@ -118,9 +128,10 @@ public class Parser {
     /**
      * Parse instruction statement.
      * @return the parse tree node for Instruction
-     * @throws Exception if a syntax error occurs
+     * @throws ParseException if a syntax error occurs
+     * @throws IOException if an I/O error occurs
      */
-    private ParseTree parseInstruction() throws Exception {
+    private ParseTree parseInstruction() throws ParseException, IOException {
 
         // create the parse tree node for Instruction
         // use the appropriate production based on the current token
@@ -158,7 +169,13 @@ public class Parser {
                 node.addChild(parseInput());
             }
 
-            default -> throw new Exception("Unexpected token " + currentToken.getType());
+            default -> throw new ParseException(
+                "Syntax Error: Unexpected token " + currentToken.getType() + " in instruction",
+                currentToken.getLine(),
+                currentToken.getColumn(),
+                null,
+                currentToken.getType()
+            );
 
         }
 
@@ -169,9 +186,10 @@ public class Parser {
     /**
      * Parse assignment statement.
      * @return the parse tree node for Assign
-     * @throws Exception if a syntax error occurs
+     * @throws ParseException if a syntax error occurs
+     * @throws IOException if an I/O error occurs
      */
-    private ParseTree parseAssign() throws Exception {
+    private ParseTree parseAssign() throws ParseException, IOException {
 
         // create the parse tree node for Assign
         // use the production: VARNAME → VarName = ExprArith [9]
@@ -190,9 +208,10 @@ public class Parser {
     /**
      * Parse If statement.
      * @return the parse tree node for If
-     * @throws Exception if a syntax error occurs
+     * @throws ParseException if a syntax error occurs
+     * @throws IOException if an I/O error occurs
      */
-    private ParseTree parseIf() throws Exception {
+    private ParseTree parseIf() throws ParseException, IOException {
 
         // create the parse tree node for If
         ParseTree node = new ParseTree(dummy(NonTerminal.IF));
@@ -216,9 +235,10 @@ public class Parser {
      * Handles the optional Else branch in an If statement.
      * If the current token is ELSE, it parses the else branch.
      * @param node the If parse tree node to which the else branch will be added
-     * @throws Exception if a syntax error occurs
+     * @throws ParseException if a syntax error occurs
+     * @throws IOException if an I/O error occurs
      */
-    private void parseOptionalElse(ParseTree node) throws Exception {
+    private void parseOptionalElse(ParseTree node) throws ParseException, IOException {
 
         if (currentToken.getType() == LexicalUnit.ELSE) {
 
@@ -239,9 +259,10 @@ public class Parser {
     /**
      * Parse While statement.
      * @return the parse tree node for While
-     * @throws Exception if a syntax error occurs
+     * @throws ParseException if a syntax error occurs
+     * @throws IOException if an I/O error occurs
      */
-    private ParseTree parseWhile() throws Exception {
+    private ParseTree parseWhile() throws ParseException, IOException {
 
         // create the parse tree node for While
         // use the production: While → While { Cond } Do Code End [12]
@@ -263,9 +284,10 @@ public class Parser {
     /**
      * Parse Output statement.
      * @return the parse tree node for Output
-     * @throws Exception if a syntax error occurs
+     * @throws ParseException if a syntax error occurs
+     * @throws IOException if an I/O error occurs
      */
-    private ParseTree parseOutput() throws Exception {
+    private ParseTree parseOutput() throws ParseException, IOException {
 
         // create the parse tree node for Output
         // use the production: Output → Print ( VarName ) [13]
@@ -285,9 +307,10 @@ public class Parser {
     /**
      * Parse Input statement.
      * @return the parse tree node for Input
-     * @throws Exception if a syntax error occurs
+     * @throws ParseException if a syntax error occurs
+     * @throws IOException if an I/O error occurs
      */
-    private ParseTree parseInput() throws Exception {
+    private ParseTree parseInput() throws ParseException, IOException {
 
         // create the parse tree node for Input
         // use the production: Input → Input ( VarName ) [14]
@@ -306,9 +329,10 @@ public class Parser {
     /**
      * Parse condition.
      * @return the parse tree node for Cond
-     * @throws Exception if a syntax error occurs
+     * @throws ParseException if a syntax error occurs
+     * @throws IOException if an I/O error occurs
      */
-    private ParseTree parseCond() throws Exception {
+    private ParseTree parseCond() throws ParseException, IOException {
 
         // create the parse tree node for Cond
         // use the production: Cond → CondImpl [15]
@@ -322,9 +346,10 @@ public class Parser {
     /**
      * Parse condition with implication.
      * @return the parse tree node for CondImpl
-     * @throws Exception if a syntax error occurs
+     * @throws ParseException if a syntax error occurs
+     * @throws IOException if an I/O error occurs
      */
-    private ParseTree parseCondImpl() throws Exception {
+    private ParseTree parseCondImpl() throws ParseException, IOException {
 
         // create the parse tree node for CondImpl
         // use the production: CondAtom -> CondImpl [16] / CondAtom [16']
@@ -361,9 +386,10 @@ public class Parser {
     /**
      * Parse condition comparison.
      * @return the parse tree node for CondComp
-     * @throws Exception if a syntax error occurs
+     * @throws ParseException if a syntax error occurs
+     * @throws IOException if an I/O error occurs
      */
-    private ParseTree parseCondComp() throws Exception {
+    private ParseTree parseCondComp() throws ParseException, IOException {
         
         // create the parse tree node for CondComp
         // use the production: ExprArith Comp ExprArith [19]
@@ -398,9 +424,10 @@ public class Parser {
     /**
      * Parse condition atom.
      * @return the parse tree node for CondAtom
-     * @throws Exception if a syntax error occurs
+     * @throws ParseException if a syntax error occurs
+     * @throws IOException if an I/O error occurs
      */
-    private ParseTree parseCondAtom() throws Exception {
+    private ParseTree parseCondAtom() throws ParseException, IOException {
 
         // check for pipe
         if (currentToken.getType() == LexicalUnit.PIPE) {
@@ -430,9 +457,10 @@ public class Parser {
     /**
      * Parse arithmetic expression.
      * @return the parse tree node for ExprArith
-     * @throws Exception if a syntax error occurs
+     * @throws ParseException if a syntax error occurs
+     * @throws IOException if an I/O error occurs
      */
-    private ParseTree parseExprArith() throws Exception {
+    private ParseTree parseExprArith() throws ParseException, IOException {
 
         // create the parse tree node for ExprArith
         // use the production: ExprAddSub [20]
@@ -446,9 +474,10 @@ public class Parser {
     /**
      * Parse addition and subtraction.
      * @return the parse tree node for ExprAddSub
-     * @throws Exception if a syntax error occurs
+     * @throws ParseException if a syntax error occurs
+     * @throws IOException if an I/O error occurs
      */
-    private ParseTree parseExprAddSub() throws Exception {
+    private ParseTree parseExprAddSub() throws ParseException, IOException {
 
         // left recursion elimination
         // parent is the root for each addition/subtraction
@@ -481,9 +510,10 @@ public class Parser {
     /**
      * Parse multiplication and division.
      * @return the parse tree node for ExprMulDiv
-     * @throws Exception if a syntax error occurs
+     * @throws ParseException if a syntax error occurs
+     * @throws IOException if an I/O error occurs
      */
-    private ParseTree parseExprMulDiv() throws Exception {
+    private ParseTree parseExprMulDiv() throws ParseException, IOException {
 
         // left recursion elimination
         // parent is the root for each multiplication/division
@@ -516,9 +546,10 @@ public class Parser {
     /**
      * Parse unary expression.
      * @return the parse tree node for ExprUnary
-     * @throws Exception if a syntax error occurs
+     * @throws ParseException if a syntax error occurs
+     * @throws IOException if an I/O error occurs
      */
-    private ParseTree parseExprUnary() throws Exception {
+    private ParseTree parseExprUnary() throws ParseException, IOException {
 
         // if there is a unary minus, handle it
         if (currentToken.getType() == LexicalUnit.MINUS) {
@@ -546,9 +577,10 @@ public class Parser {
     /**
      * Parse primary expression.
      * @return the parse tree node for ExprPrimary
-     * @throws Exception if a syntax error occurs
+     * @throws ParseException if a syntax error occurs
+     * @throws IOException if an I/O error occurs
      */
-    private ParseTree parseExprPrimary() throws Exception {
+    private ParseTree parseExprPrimary() throws ParseException, IOException {
 
         // create the parse tree node for ExprPrimary
         // use the appropriate production based on the current token
@@ -558,7 +590,13 @@ public class Parser {
             case VARNAME -> { node = new ParseTree(currentToken); node.setRuleNumber(25); match(LexicalUnit.VARNAME); }
             case NUMBER  -> { node = new ParseTree(currentToken); node.setRuleNumber(26); match(LexicalUnit.NUMBER); }
             case LPAREN  -> { match(LexicalUnit.LPAREN); node = parseExprArith(); match(LexicalUnit.RPAREN); node.setRuleNumber(27); }
-            default -> throw new Exception("Unexpected token in expression: " + currentToken.getType());
+            default -> throw new ParseException(
+                "Syntax Error: Unexpected token " + currentToken.getType() + " in expression",
+                currentToken.getLine(),
+                currentToken.getColumn(),
+                null,
+                currentToken.getType()
+            );
         }
 
         return node;
