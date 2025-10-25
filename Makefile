@@ -73,4 +73,17 @@ clean:
 	@rm -rf $(DIST_DIR)
 	@rm -rf $(LIB_DIR)
 
-.PHONY: all dirs classes jar clean test-classes test javadoc junit-jar
+# help
+help:
+	@echo "Available Makefile rules:"
+	@echo "  all             - Build everything (dirs + jar)"
+	@echo "  dirs            - Create necessary folders"
+	@echo "  classes         - Compile java source files"
+	@echo "  jar             - Build the JAR file"
+	@echo "  test-classes    - Compile test files"
+	@echo "  test            - Run JUnit tests"
+	@echo "  junit-jar       - Download JUnit jar if missing"
+	@echo "  javadoc         - Generate Javadoc"
+	@echo "  clean           - Clean bin, dist, lib directories"
+
+.PHONY: all dirs classes jar clean test-classes test javadoc junit-jar help

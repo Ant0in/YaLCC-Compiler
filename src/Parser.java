@@ -8,13 +8,6 @@ import java.io.IOException;
  */
 public class Parser {
 
-    /** Enumeration of non-terminal symbols in the YaLCC grammar. */
-    public enum NonTerminal {
-        PROGRAM, CODE, INSTRUCTION, ASSIGN, IF, WHILE, OUTPUT, INPUT,
-        COND_IMPL, COND_COMP, COND_ATOM, EXPR_ARITH, EXPR_ADDSUB, EXPR_MULDIV,
-        EXPR_UNARY, EXPR_PRIMARY, UNARY_MINUS
-    }
-
     /** The lexical analyzer providing tokens for parsing. */
     private final LexicalAnalyzer lexer;
 
@@ -66,7 +59,7 @@ public class Parser {
      * @return a Symbol representing the non-terminal
      */
     private Symbol dummy(NonTerminal nt) {
-        return new Symbol(null, -1, -1, nt.toString());
+        return new Symbol(null, -1, -1, nt);
     }
 
     /**

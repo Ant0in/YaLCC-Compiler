@@ -1,39 +1,27 @@
 
+import java.util.Objects;
 
 /**
  * Symbol objects represent a terminal or non-terminal symbol in the grammar.
  * 
  * @author Not fully determined but assumed to be among Marie Van Den Bogaard, Léo Exibard. Javadoc by Mathieu Sassolas.
  */
- 
- public class Symbol{
+public class Symbol {
 
-    /**
-     * Undefined line/column position of symbol.
-     */
-	private static final int UNDEFINED_POSITION = -1;
+    /** Undefined line/column position of symbol. */
+    private static final int UNDEFINED_POSITION = -1;
     
-    /**
-      * No value attached to symbol, for terminals without value.
-      */
+    /** No value attached to symbol, for terminals without value. */
 	private static final Object NO_VALUE = null;
-	
-    /**
-      * The LexicalUnit (terminal) attached to this token.
-      */
+
+    /** The LexicalUnit (terminal) attached to this token. */
 	private final LexicalUnit type;
     
-    /**
-     * The value attached to the token.
-     * 
-     * May be any Object. In fact, for terminals with value it is indeed the value attached to the terminal.
-     */
+    /** The value attached to the token. May be any Object. In fact, for terminals with value it is indeed the value attached to the terminal. */
 	private final Object value;
-    
-    /**
-     * The position of the symbol in the parsed file.
-     */
-	private final int line,column;
+
+    /** The position of the symbol in the parsed file. */
+	private final int line, column;
 
     /**
      * Creates a Symbol using the provided attributes.
@@ -157,45 +145,55 @@
      */
 	@Override
 	public int hashCode() {
-		final String value = this.value != null ? this.value.toString() : "null";
-		final String type = this.type != null ? this.type.toString() : "null";
-		return new String(value + "_" + type).hashCode();
+        return Objects.hash(type, value);
 	}
-	
+
+    /**
+     * Compares this symbol to another object for equality.
+     * 
+     * Two symbols are equal if they have the same type and value.
+     * 
+     * @param obj the object to compare with this symbol.
+     * @return true if the object is a Symbol with the same type and value, false otherwise.
+     */
+	@Override
+	public boolean equals(Object obj) {
+
+		if (this == obj) return true;  // self check
+		if (!(obj instanceof Symbol)) return false;  // type check
+
+		Symbol other = (Symbol) obj;
+		return Objects.equals(this.type, other.type) && Objects.equals(this.value, other.value);
+
+	}
+
     /**
      * Returns a string representation of the symbol.
      * This method has been modified from the provided class to provide the value of the non-terminal symbols.
      * 
      * @return a string representation of the token's value and type.
      */
-	@Override
-	public String toString() {
-        final String value = this.value != null ? this.value.toString() : "null";
-		if (this.isTerminal()) {
-			final String type = this.type != null ? this.type.toString() : "null";
-			return "token: " + padTo(value, 12) + "\tlexical unit: " + type; // The longest keyword has length 7
-		}
-		return "Non-terminal symbol: " + value;
-	}
-
-    /**
-     * Returns a string padded with spaces up to the specified length.
-     * 
-     * @param s a string to be padded.
-     * @param l the (minimal) length to be reached.
-     * @return a String containing the original string and spaces to reach at least length l.
-     */
-    private String padTo(String s, int l) {
-        int n = s.length();
-        String res = s;
-        for (int i = 1; i < l - n; i++) {
-            res += " ";
-        }
-        return res;
+    @Override
+    public String toString() {
+        String valueStr = value != null ? value.toString() : "null";
+        String typeStr = type != null ? type.toString() : "null";
+        return isTerminal()
+            ? String.format("token[%s, %s]", typeStr, valueStr)
+            : String.format("non-terminal[%s]", valueStr);
     }
 
+    /**
+     * Escape LaTeX special characters in a string.
+     * If the input string is null, returns an empty string.
+     * 
+     * @param s the input string.
+     * @return the escaped string.
+     */
     private static String escapeLaTeX(String s) {
+
         if (s == null) return "";
+
+        // escape special characters
         return s.replace("\\", "\\textbackslash ")
                 .replace("&", "\\&")
                 .replace("%", "\\%")
@@ -206,21 +204,22 @@
                 .replace("}", "\\}")
                 .replace("~", "\\textasciitilde ")
                 .replace("^", "\\textasciicircum ");
+
     }
 
     /**
-     * Return a LaTeX-friendly string for this symbol.
+     * Returns a LaTeX-formatted string representation of the symbol.
+     * 
+     * @return a LaTeX-formatted string representation of the symbol.
      */
     public String toTexString() {
-        String valStr = escapeLaTeX(value != null ? value.toString() : "");
-        if (isTerminal()) {
-            String typeStr = escapeLaTeX(type != null ? type.toString() : "");
-            return "{\\texttt{" + valStr + "} \\textit{" + typeStr + "}}";
-        } else {
-            return "{\\textbf{Non-terminal symbol:} " + valStr + "}";
-        }
+
+        String valueStr = escapeLaTeX(value != null ? value.toString() : "");
+        String typeStr = escapeLaTeX(type != null ? type.toString() : "");
+
+        return isTerminal() ? String.format("{\\texttt{%s} {\\textit{%s}}}", typeStr, valueStr)
+                           : String.format("{\\textbf{Non Terminal: %s}}", valueStr);
+
     }
-
-
-
+    
 }
