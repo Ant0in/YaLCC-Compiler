@@ -29,10 +29,10 @@ public class ParserTest {
      * @param expected the expected non-terminal
      * @return true if matches, false otherwise
      */
-    private boolean matchNonTerminal(ParseTree node, Parser.NonTerminal expected) {
+    private boolean matchNonTerminal(ParseTree node, NonTerminal expected) {
         Symbol label = node.getLabel();
         assertNotNull(label);
-        return label.getType() == null && label.getValue().equals(expected.toString());
+        return label.isNonTerminal() && label.getValue() == expected;
     }
 
     /**
@@ -92,7 +92,7 @@ public class ParserTest {
     /**
      * Assertion helper methods for better error messages.
      */
-    private void assertNonTerminal(ParseTree node, Parser.NonTerminal expected) {
+    private void assertNonTerminal(ParseTree node, NonTerminal expected) {
         assertTrue(matchNonTerminal(node, expected),
         "Expected non-terminal does not match (" + node.getLabel().getValue() + " != " + expected + ")");
     }
@@ -133,7 +133,7 @@ public class ParserTest {
         ParseTree tree = parser.parseProgram();
 
         // root is program
-        assertNonTerminal(tree, Parser.NonTerminal.PROGRAM);
+        assertNonTerminal(tree, NonTerminal.PROGRAM);
         assertChildCount(tree, 2);
 
         // PROGNAME
@@ -143,7 +143,7 @@ public class ParserTest {
 
         // CODE (empty)
         ParseTree codeNode = child(tree, 1);
-        assertNonTerminal(codeNode, Parser.NonTerminal.CODE);
+        assertNonTerminal(codeNode, NonTerminal.CODE);
         assertIsLeaf(codeNode);
 
     }
@@ -161,12 +161,12 @@ public class ParserTest {
 
         // instruction node
         ParseTree instructionNode = child(child(tree, 1), 0); // CODE -> INSTRUCTION
-        assertNonTerminal(instructionNode, Parser.NonTerminal.INSTRUCTION);
+        assertNonTerminal(instructionNode, NonTerminal.INSTRUCTION);
         assertChildCount(instructionNode, 1);
 
         // input statement
         ParseTree inputNode = child(instructionNode, 0);
-        assertNonTerminal(inputNode, Parser.NonTerminal.INPUT);
+        assertNonTerminal(inputNode, NonTerminal.INPUT);
         assertChildCount(inputNode, 1);
 
         // input variable (leaf)
@@ -189,12 +189,12 @@ public class ParserTest {
 
         // instruction node
         ParseTree instructionNode = child(child(tree, 1), 0); // CODE -> INSTRUCTION
-        assertNonTerminal(instructionNode, Parser.NonTerminal.INSTRUCTION);
+        assertNonTerminal(instructionNode, NonTerminal.INSTRUCTION);
         assertChildCount(instructionNode, 1);
 
         // assignment statement
         ParseTree assignNode = child(instructionNode, 0);
-        assertNonTerminal(assignNode, Parser.NonTerminal.ASSIGN);
+        assertNonTerminal(assignNode, NonTerminal.ASSIGN);
         assertChildCount(assignNode, 2);
 
         // variable
@@ -221,7 +221,7 @@ public class ParserTest {
         ParseTree tree = parser.parseProgram();
 
         ParseTree assignNode = child(child(child(tree, 1), 0), 0); // CODE -> INSTRUCTION -> ASSIGN
-        assertNonTerminal(assignNode, Parser.NonTerminal.ASSIGN);
+        assertNonTerminal(assignNode, NonTerminal.ASSIGN);
         assertChildCount(assignNode, 2);
 
         // left side (variable)
@@ -231,7 +231,7 @@ public class ParserTest {
 
         // right side (expression)
         ParseTree exprNode = child(assignNode, 1);
-        assertNonTerminal(exprNode, Parser.NonTerminal.EXPR_MULDIV);
+        assertNonTerminal(exprNode, NonTerminal.EXPR_MULDIV);
         assertChildCount(exprNode, 3);
 
         // 2nd child should be TIMES
@@ -246,7 +246,7 @@ public class ParserTest {
 
         // 1st child should be EXPR_ADDSUB
         ParseTree addSubNode = child(exprNode, 0);
-        assertNonTerminal(addSubNode, Parser.NonTerminal.EXPR_ADDSUB);
+        assertNonTerminal(addSubNode, NonTerminal.EXPR_ADDSUB);
         assertChildCount(addSubNode, 3);
 
         // 1st child of addSubNode should be variable b
@@ -277,12 +277,12 @@ public class ParserTest {
         ParseTree tree = parser.parseProgram();
 
         ParseTree ifNode = child(child(child(tree, 1), 0), 0); // CODE -> INSTRUCTION -> IF
-        assertNonTerminal(ifNode, Parser.NonTerminal.IF);
+        assertNonTerminal(ifNode, NonTerminal.IF);
         assertChildCount(ifNode, 3);
 
         // condition node
         ParseTree condNode = child(ifNode, 0);
-        assertNonTerminal(condNode, Parser.NonTerminal.COND_COMP);
+        assertNonTerminal(condNode, NonTerminal.COND_COMP);
         assertChildCount(condNode, 3);
 
         // left side of condition (variable x)
@@ -302,12 +302,12 @@ public class ParserTest {
 
         // then code node
         ParseTree thenCodeNode = child(ifNode, 1);
-        assertNonTerminal(thenCodeNode, Parser.NonTerminal.CODE);
+        assertNonTerminal(thenCodeNode, NonTerminal.CODE);
         assertIsLeaf(thenCodeNode);
 
         // else code node
         ParseTree elseCodeNode = child(ifNode, 2);
-        assertNonTerminal(elseCodeNode, Parser.NonTerminal.CODE);
+        assertNonTerminal(elseCodeNode, NonTerminal.CODE);
         assertIsLeaf(elseCodeNode);
 
     }
@@ -324,12 +324,12 @@ public class ParserTest {
         ParseTree tree = parser.parseProgram();
 
         ParseTree ifNode = child(child(child(tree, 1), 0), 0); // CODE -> INSTRUCTION -> IF
-        assertNonTerminal(ifNode, Parser.NonTerminal.IF);
+        assertNonTerminal(ifNode, NonTerminal.IF);
         assertChildCount(ifNode, 2);
 
         // c -> condition component
         ParseTree condImplNode = child(ifNode, 0);
-        assertNonTerminal(condImplNode, Parser.NonTerminal.COND_IMPL);
+        assertNonTerminal(condImplNode, NonTerminal.COND_IMPL);
         assertChildCount(condImplNode, 3);
 
         // c variable, implies and pipe condition
@@ -344,17 +344,17 @@ public class ParserTest {
 
         // pipe condition
         ParseTree pipeCondNode = child(condImplNode, 2);
-        assertNonTerminal(pipeCondNode, Parser.NonTerminal.COND_ATOM);
+        assertNonTerminal(pipeCondNode, NonTerminal.COND_ATOM);
         assertChildCount(pipeCondNode, 1);
 
         // cond in pipe (which is a cond_impl)
         ParseTree pipeCondImplNode = child(pipeCondNode, 0);
-        assertNonTerminal(pipeCondImplNode, Parser.NonTerminal.COND_IMPL);
+        assertNonTerminal(pipeCondImplNode, NonTerminal.COND_IMPL);
         assertChildCount(pipeCondImplNode, 3);
 
         // first condition a < 10
         ParseTree firstCondNode = child(pipeCondImplNode, 0);
-        assertNonTerminal(firstCondNode, Parser.NonTerminal.COND_COMP);
+        assertNonTerminal(firstCondNode, NonTerminal.COND_COMP);
         assertChildCount(firstCondNode, 3);
 
         // left side of condition (variable a)
@@ -374,7 +374,7 @@ public class ParserTest {
 
         // second condition b < 10
         ParseTree secondCondNode = child(pipeCondImplNode, 2);
-        assertNonTerminal(secondCondNode, Parser.NonTerminal.COND_COMP);
+        assertNonTerminal(secondCondNode, NonTerminal.COND_COMP);
         assertChildCount(secondCondNode, 3);
 
         // left side of condition (variable b)
