@@ -214,6 +214,10 @@ public class Symbol {
      */
     public String toTexString() {
 
+        if (isTerminal() && type == LexicalUnit.EPSILON) {
+            return "{$\\varepsilon$}";
+        }
+
         String valueStr = escapeLaTeX(value != null ? value.toString() : "");
         String typeStr = escapeLaTeX(type != null ? type.toString() : "");
 

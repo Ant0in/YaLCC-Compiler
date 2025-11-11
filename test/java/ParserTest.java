@@ -141,10 +141,15 @@ public class ParserTest {
         assertTerminal(progNode, "TEST");
         assertIsLeaf(progNode);
 
-        // CODE (empty)
+        // CODE
         ParseTree codeNode = child(tree, 1);
         assertNonTerminal(codeNode, NonTerminal.CODE);
-        assertIsLeaf(codeNode);
+        assertChildCount(codeNode, 1);  // CODE -> ε
+
+        // epsilon node
+        ParseTree epsilonNode = child(codeNode, 0);
+        assertTerminal(epsilonNode, LexicalUnit.EPSILON);
+        assertIsLeaf(epsilonNode);
 
     }
 
@@ -303,12 +308,14 @@ public class ParserTest {
         // then code node
         ParseTree thenCodeNode = child(ifNode, 1);
         assertNonTerminal(thenCodeNode, NonTerminal.CODE);
-        assertIsLeaf(thenCodeNode);
+        assertIsLeaf(child(thenCodeNode, 0));  // empty
+        
 
         // else code node
         ParseTree elseCodeNode = child(ifNode, 2);
         assertNonTerminal(elseCodeNode, NonTerminal.CODE);
-        assertIsLeaf(elseCodeNode);
+        assertIsLeaf(child(elseCodeNode, 0));  // empty
+        
 
     }
 

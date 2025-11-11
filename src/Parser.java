@@ -111,7 +111,12 @@ public class Parser {
 
             }
 
-            default -> node.setRuleNumber(3);
+            default -> {
+                // epsilon production
+                // ?? i decided to add an epsilon node for clarity in the parse tree
+                node.setRuleNumber(3);
+                node.addChild(new ParseTree(new Symbol(LexicalUnit.EPSILON)));
+            }
         }
 
         return node;
