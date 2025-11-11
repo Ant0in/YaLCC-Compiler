@@ -17,8 +17,8 @@
 Welcome to the **YaLCC compiler**! This project is part of the **Language Theory course INFO—F403** at `ULB`. It implements the **lexical analysis** and the **parsing**, constructing the **recursive descent parse trees** for a toy programming language called **YaLCC**.
 
 <div align="center">
-  <img src="more/lexer_demo.svg" alt="lexer demo" width="600"/>
-  <p><b>YaLCC Lexer</b> scanning the tokens for <b><code>PGCD.ycc</code></b></p>
+  <img src="more/tree_demo.png" alt="Parser demo" width="600"/>
+  <p><b>YaLCC Parser</b> making the ParseTree for <b><code>OneLiner.ycc</code></b></p>
 </div>
 
 ## 📜 Description
@@ -30,7 +30,7 @@ This Java project provides:
 - Tracking of **leftmost derivation rule numbers**.
 - Optional **LaTeX export** for visualizing parse trees using `forest` or `tikz` packages.
 
-For more detailed problem specifications and additional information, please refer to: [**`./more/F403project2.pdf`**](more/F403project2.pdf) or to the report [**`./doc/report/infof403_part1_report.pdf`**](doc/report/infof403_part1_report.pdf).
+For more detailed problem specifications and additional information, please refer to: [**`./more/F403project2.pdf`**](more/F403project2.pdf) or to the report [**`./doc/report/infof403_part2_report.pdf`**](doc/report/infof403_part2_report.pdf).
 
 ## ⚙️ Installation
 

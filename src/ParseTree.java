@@ -89,11 +89,10 @@ public class ParseTree {
 
         // forest format: [ {label} child1 child2 ... childN ]
         StringBuilder treeTeX = new StringBuilder();
+        String fillColor = label.isTerminal() ? "blue!20" : "red!20";
 
-        // open this node
-        treeTeX.append("[");
-        treeTeX.append('{').append(label.toTexString()).append('}');
-        treeTeX.append(" ");
+        // open this node (with label and color)
+        treeTeX.append("[{").append(label.toTexString()).append("}, fill=").append(fillColor).append(" ");
 
         for (ParseTree child : children) {
             // recursively add child trees
@@ -150,7 +149,7 @@ public class ParseTree {
      */
     public String toForestPicture() {
         return "\\begin{forest}for tree={rectangle, draw, l sep=20pt, edge={->, rounded corners},"
-                + "parent anchor=south, child anchor=north,}" + toLaTexTree() + ";\n\\end{forest}";
+                + "parent anchor=south, child anchor=north, font=\\small}" + toLaTexTree() + ";\n\\end{forest}";
     }
 
     /**
