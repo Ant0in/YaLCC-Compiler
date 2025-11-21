@@ -1,9 +1,8 @@
-
 import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.Test;
-import java.io.StringReader;
 
+import java.io.StringReader;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for the Parser class.
@@ -16,11 +15,9 @@ public class ParserTest {
      * @return a Parser instance
      */
     private Parser makeParser(String input) throws Exception {
-        
         // create a parser from input string
         LexicalAnalyzer lexer = new LexicalAnalyzer(new StringReader(input));
         return new Parser(lexer);
-
     }
 
     /**
@@ -42,7 +39,6 @@ public class ParserTest {
      * @return true if matches, false otherwise
      */
     private boolean matchTerminal(ParseTree node, Object expected) {
-        
         Symbol label = node.getLabel();
         assertNotNull(label);
 
@@ -56,7 +52,6 @@ public class ParserTest {
         // otherwise compare values
         Object value = label.getValue();
         return value != null && value.equals(expected);
-
     }
 
     /**
@@ -66,7 +61,10 @@ public class ParserTest {
      * @return the child parse tree node
      */
     private ParseTree child(ParseTree node, int index) {
-        assertTrue(index < node.getChildren().size(), "Node has fewer children than expected");
+        assertTrue(
+            index < node.getChildren().size(),
+            "Node has fewer children than expected"
+        );
         return node.getChildren().get(index);
     }
 
@@ -93,32 +91,52 @@ public class ParserTest {
      * Assertion helper methods for better error messages.
      */
     private void assertNonTerminal(ParseTree node, NonTerminal expected) {
-        assertTrue(matchNonTerminal(node, expected),
-        "Expected non-terminal does not match (" + node.getLabel().getValue() + " != " + expected + ")");
+        assertTrue(
+            matchNonTerminal(node, expected),
+            "Expected non-terminal does not match (" +
+                node.getLabel().getValue() +
+                " != " +
+                expected +
+                ")"
+        );
     }
 
     /**
      * Assertion helper methods for better error messages.
      */
     private void assertTerminal(ParseTree node, Object expected) {
-        assertTrue(matchTerminal(node, expected),
-        "Expected terminal does not match (" + node.getLabel().getValue() + " != " + expected + ")");
-        
+        assertTrue(
+            matchTerminal(node, expected),
+            "Expected terminal does not match (" +
+                node.getLabel().getValue() +
+                " != " +
+                expected +
+                ")"
+        );
     }
 
     /**
      * Assertion helper methods for better error messages.
      */
     private void assertChildCount(ParseTree node, int expectedCount) {
-        assertTrue(countChildren(node, expectedCount),
-        "Expected child count does not match (expected " + expectedCount + ", got " + node.getChildren().size() + ")");
+        assertTrue(
+            countChildren(node, expectedCount),
+            "Expected child count does not match (expected " +
+                expectedCount +
+                ", got " +
+                node.getChildren().size() +
+                ")"
+        );
     }
 
     /**
      * Assertion helper methods for better error messages.
      */
     private void assertIsLeaf(ParseTree node) {
-        assertTrue(isLeaf(node), "Expected node to be a leaf, but it has children");
+        assertTrue(
+            isLeaf(node),
+            "Expected node to be a leaf, but it has children"
+        );
     }
 
     /**
@@ -126,7 +144,6 @@ public class ParserTest {
      */
     @Test
     void testParseMinimalProgram() throws Exception {
-
         // minimal program
         String input = "Prog TEST Is End";
         Parser parser = makeParser(input);
@@ -144,13 +161,12 @@ public class ParserTest {
         // CODE
         ParseTree codeNode = child(tree, 1);
         assertNonTerminal(codeNode, NonTerminal.CODE);
-        assertChildCount(codeNode, 1);  // CODE -> ε
+        assertChildCount(codeNode, 1); // CODE -> ε
 
         // epsilon node
         ParseTree epsilonNode = child(codeNode, 0);
         assertTerminal(epsilonNode, LexicalUnit.EPSILON);
         assertIsLeaf(epsilonNode);
-
     }
 
     /**
@@ -158,7 +174,6 @@ public class ParserTest {
      */
     @Test
     void testParseOneStatement() throws Exception {
-        
         // program with one statement
         String input = "Prog MYPROG Is Input(a); End";
         Parser parser = makeParser(input);
@@ -178,7 +193,6 @@ public class ParserTest {
         ParseTree varNode = child(inputNode, 0);
         assertTerminal(varNode, "a");
         assertIsLeaf(varNode);
-
     }
 
     /**
@@ -186,7 +200,6 @@ public class ParserTest {
      */
     @Test
     void testParseAssignment() throws Exception {
-        
         // program with assignment
         String input = "Prog ASSIGN Is a = 5; End";
         Parser parser = makeParser(input);
@@ -211,7 +224,6 @@ public class ParserTest {
         ParseTree numNode = child(assignNode, 1);
         assertTerminal(numNode, 5);
         assertIsLeaf(numNode);
-
     }
 
     /**
@@ -219,7 +231,6 @@ public class ParserTest {
      */
     @Test
     void testParseExpression() throws Exception {
-        
         // program with expression
         String input = "Prog EXPR Is a = (b + 3) * 2; End";
         Parser parser = makeParser(input);
@@ -275,7 +286,6 @@ public class ParserTest {
      */
     @Test
     void testParseIfElseCond() throws Exception {
-        
         // program with if-else statement
         String input = "Prog IFELSE Is If { x == 0 } Then Else End; End";
         Parser parser = makeParser(input);
@@ -308,15 +318,12 @@ public class ParserTest {
         // then code node
         ParseTree thenCodeNode = child(ifNode, 1);
         assertNonTerminal(thenCodeNode, NonTerminal.CODE);
-        assertIsLeaf(child(thenCodeNode, 0));  // empty
-        
+        assertIsLeaf(child(thenCodeNode, 0)); // empty
 
         // else code node
         ParseTree elseCodeNode = child(ifNode, 2);
         assertNonTerminal(elseCodeNode, NonTerminal.CODE);
-        assertIsLeaf(child(elseCodeNode, 0));  // empty
-        
-
+        assertIsLeaf(child(elseCodeNode, 0)); // empty
     }
 
     /**
@@ -324,9 +331,9 @@ public class ParserTest {
      */
     @Test
     void testParseComplexCondition() throws Exception {
-        
         // program with complex condition
-        String input = "Prog COMPLEX Is If { c -> | a < 10 -> b < 10 | } Then End; End";
+        String input =
+            "Prog COMPLEX Is If { c -> | a < 10 -> b < 10 | } Then End; End";
         Parser parser = makeParser(input);
         ParseTree tree = parser.parseProgram();
 
@@ -403,7 +410,29 @@ public class ParserTest {
         ParseTree impliesNode2 = child(pipeCondImplNode, 1);
         assertTerminal(impliesNode2, LexicalUnit.IMPLIES);
         assertIsLeaf(impliesNode2);
-
     }
 
+    @Test
+    void testParseEmptyProgram() throws Exception {
+        /*
+         * Program with an empty body. Supposed to throw an error for missing "Prog"
+         */
+        String input = "";
+        Parser parser = makeParser(input);
+
+        assertThrows(ParseException.class, () -> {
+            parser.parseProgram();
+        });
+    }
+
+    @Test
+    void testParseLexemesInVarname() throws Exception {
+        /*
+         * Test if a lexem in a varname is taken as a Varname
+         */
+
+        String input =
+            "Prog ProgTest Is a = 5; b = 10; c = a + b; While { 0 < c } Do c = c - 1 ; End; End";
+        Parser parser = makeParser(input);
+    }
 }

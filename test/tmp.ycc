@@ -1,0 +1,8 @@
+Prog ProgTest Is
+    a = 5;
+    b = 10;
+    c = a + b;
+    While { 0 < c } Do
+        c = c - 1 ;
+    End;
+End
