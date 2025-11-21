@@ -1,0 +1,7 @@
+Prog Math Is
+
+Input(a);
+c = (a + a) / a + a;
+Print(a);
+
+End;
