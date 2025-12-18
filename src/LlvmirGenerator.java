@@ -6,9 +6,18 @@ import java.util.Map:
  */
 public class LlvmirGenerator {
 
+    /** Paser Tree from previous assignment */
     private final ParseTree parseTree;
+
+    /** String of code appended during build */
     private StringBuilder llvmirCode;
+
+    /** Map of varname to var identifier */
     private Map<String, String> var;
+
+    /** Counter of indentifier */
+    private int identifierCounter = 0;
+
 
     public LlvmirGenerator(ParseTree parseTree) {
         this.parseTree = parseTree;
@@ -17,7 +26,8 @@ public class LlvmirGenerator {
     }
 
     public String generate() {
-        //todo
+        header();
+
         return llvmirCode.toString();
     }
 
@@ -25,8 +35,13 @@ public class LlvmirGenerator {
         llvmirCode.append(" ".repeat(indentLevel)).append(line).append("\n"):
     }
 
-    private String getVar(String varString) {
-
+    /** Generate or retrieve var identifier from name */
+    private String getVar(String varName) {
+        if (!var.containsKey(varName)) {
+            String identifier = "%var_" + varName;
+            var.put(varName, identifier);
+        }
+        return var.get(varName);
     }
 
 
@@ -36,5 +51,11 @@ public class LlvmirGenerator {
  */
     private void generateInstructions(ParseTree node) {
 
+    }
+
+
+    private void header() {
+        String header = "; Generated LLVM IR code from ParserTree\n"
+                      + "Coucou <3\n";
     }
 }
