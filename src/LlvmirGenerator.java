@@ -31,17 +31,22 @@ public class LlvmirGenerator {
         return llvmirCode.toString();
     }
 
-    public void line(String line, int indentLevel)) {
-        llvmirCode.append(" ".repeat(indentLevel)).append(line).append("\n"):
+    public void line(String line, int indentLevel) {
+        llvmirCode.append(" ".repeat(indentLevel)).append(line).append("\n");
     }
 
     /** Generate or retrieve var identifier from name */
     private String getVar(String varName) {
         if (!var.containsKey(varName)) {
-            String identifier = "%var_" + varName;
+            String identifier = "%" + varName;
             var.put(varName, identifier);
         }
         return var.get(varName);
+    }
+
+
+    private createVar(String identifier) {
+        line(identifier + "alloca i32")
     }
 
 
