@@ -12,11 +12,11 @@ public class LlvmirGenerator {
     /** String of code appended during build */
     private StringBuilder llvmirCode;
 
-    /** Map of varname to var identifier */
+    /** Map of varname and their identifier */
     private Map<String, String> var;
 
-    /** Counter of indentifier */
-    private int identifierCounter = 0;
+    /** unamed variable counter (temporary value) */
+    private int unamedVarCounter = 0;
 
 
     public LlvmirGenerator(ParseTree parseTree) {
@@ -31,23 +31,43 @@ public class LlvmirGenerator {
         return llvmirCode.toString();
     }
 
-    public void line(String line, int indentLevel) {
+    private void header() {
+        String header = "; Generated LLVM IR code from ParserTree\n"
+                      + "Coucou <3\n";
+    }
+
+    public void newLine(String line, int indentLevel) {
         llvmirCode.append(" ".repeat(indentLevel)).append(line).append("\n");
     }
 
-    /** Generate or retrieve var identifier from name */
-    private String getVar(String varName) {
+
+    /** Retrieve the varId of a named var. Create it inplace if not existant */
+    private String getOrNewI32(String varName) {
         if (!var.containsKey(varName)) {
-            String identifier = "%" + varName;
-            var.put(varName, identifier);
+            String varId = "%var_" + varName;
+            var.put(varName, varId);
+            newLine(varId + " = alloca i32", 1);
         }
         return var.get(varName);
     }
 
-
-    private createVar(String identifier) {
-        line(identifier + "alloca i32")
+    /** load a named var into a new unamed var. Create named var if non existant */
+    private String loadI32(String varName) {
+        String varId = getOrNewI32(varName);
+        String unamVarId = "%" + (unamedVarCounter++);
+        newLine(unamVarId + " = load i32, i32 * " + varId, 1);
+        return unamVarId;
     }
+
+    /** store an unamed var into a named var. Create named var if non existant */
+    private void storeInNamVar(String varName, String unamVarId) {
+        String varId = getOrNewI32(varName);
+        newLine("store i32 " + unamVarId + ", i32* " + varId, 1);
+    }
+
+    //TODO: Store constants ?
+
+
 
 
     /**
@@ -59,8 +79,4 @@ public class LlvmirGenerator {
     }
 
 
-    private void header() {
-        String header = "; Generated LLVM IR code from ParserTree\n"
-                      + "Coucou <3\n";
-    }
 }
