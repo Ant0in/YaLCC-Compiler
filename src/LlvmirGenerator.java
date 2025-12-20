@@ -1,4 +1,5 @@
 import java.util.HashMap;
+import java.util.List
 
 /**
  * LLVM IR Generator from yaLcc parse tree
@@ -17,6 +18,9 @@ public class LlvmirGenerator {
     /** unamed variable counter (temporary value) */
     private int unamedVarCounter = 0;
 
+    /** label counter */
+    private int labelCounter = 0;
+
     public LlvmirGenerator(ParseTree parseTree) {
         this.parseTree = parseTree;
         this.llvmirCode = new StringBuilder();
@@ -24,9 +28,15 @@ public class LlvmirGenerator {
         this.unamedVarCounter = 0;
     }
 
+    private String newLabel() {
+        return "label" + labelCounter++;
+    }
+
     private void header() {
-        String header =
-            "; Generated LLVM IR code from ParserTree\n" + "Coucou <3\n";
+        newline("Generated LLVM IR code frome ParseTree\n", 0);
+        newLine("; External function declarations :", 0);
+        newLine("declare i32 @getchar () ; gets one character from stdin", 0);
+        newLine("declare i32 @putchar ( i32 ) ; writes one character to stdout"0);
     }
 
     private ParseTree getCodeBranch(ParseTree treeNode) {
@@ -80,15 +90,15 @@ public class LlvmirGenerator {
     /** load a named var into a new unamed var. Create named var if non existant */
     private String loadI32(String varName) {
         String varId = getOrNewI32(varName);
-        String unamVarId = "%" + (unamedVarCounter++);
-        newLine(unamVarId + " = load i32, i32 * " + varId, 2);
-        return unamVarId;
+        String unamedVarId = "%" + unamedVarCounter++;
+        newLine(unamedVarId + " = load i32, i32 * " + varId, 2);
+        return unamedVarId;
     }
 
     /** store an unamed var into a named var. Create named var if non existant */
-    private void storeInNamI32(String varName, String unamVarId) {
+    private void storeInNamI32(String varName, String unamedVarId) {
         String varId = getOrNewI32(varName);
-        newLine("store i32 " + unamVarId + ", i32* " + varId, 2);
+        newLine("store i32 " + unamedVarId + ", i32* " + varId, 2);
     }
 
     /**
@@ -121,9 +131,50 @@ public class LlvmirGenerator {
         }
     }
 
-    private void newAssign(ParseTree treeNode) {}
+    private void newAssign(ParseTree treeNode) {
+        String varName = null;
+        ParseTree exprNode = null;
 
-    private void newIf(ParseTree treeNode) {}
+        for (ParseTree child : treeNode.getChildren()) {
+            if (child.getLabel().isTerminal() && child.getLabel().getValue() == LexicalUnit.VARNAME) {
+                varName = child.getLabel().getValue().toString();
+            } else if (child.getLabel().isNonTerminal() && child.getLabel().getValue() == NonTerminal.EXPR_ARITH) {
+                exprNode = child; // TODO: generate expr and get unamed var
+            }
+        }
+
+        String varId = newExprArith(exprNode);
+        storeInNamI32(varName, varId);
+    }
+
+
+    private void newIf(ParseTree treeNode) {
+        ParseTree condNode = null;
+        ParseTree thenNode = null;
+        ParseTree elseNode = null;
+
+
+        List<ParseTree> childs = treeNode.getChildren();
+        for (int i = 0; i < childs.size(); i++) {
+            ParseTree child = childs.get(i);
+            if (child.getLabel().getValue() == NonTerminal.COND_IMPL) {
+                condNode = child;
+            } else if ( child.getLabel().getValue() == LexicalUnit.THEN && i + 1 < childs.size()) {
+                thenNode = childs.get(1 + i);
+            } else if ( child.getLabel().getValue() == LexicalUnit.ELSE && i + 1 < childs.size()) {
+                elseNode = childs.get(1 + i);
+            }
+        }
+
+        String condId = newCond(condNode);
+        String thenLabel = nextLabel();
+        String alseLabel = nextLabel();
+        String endLabel = nextLabel();
+
+        line("br i1 " + condReg + ", label %" + thennLabel +  )
+    }
+
+
 
     private void newWhile(ParseTree treeNode) {}
 
@@ -133,5 +184,5 @@ public class LlvmirGenerator {
 
     private void newCond(ParseTree treeNode) {}
 
-    private void newExprArith(ParseTree treeNode) {}
+    private String newExprArith(ParseTree treeNode) {}
 }
