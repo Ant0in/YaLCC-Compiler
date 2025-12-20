@@ -6,13 +6,13 @@ import java.util.List;
  */
 public class LlvmirGenerator {
 
-    /** Paser Tree from previous assignment */
+    /** Top of Paser Tree*/
     private final ParseTree parseTree;
 
     /** String of code appended during build */
     private StringBuilder llvmirCode;
 
-    /** Map of varname and their identifier */
+    /** Map of named var and their identifier */
     private HashMap<String, String> var;
 
     /** unamed variable counter (temporary value) */
@@ -28,13 +28,21 @@ public class LlvmirGenerator {
         this.parseTree = parseTree;
         this.llvmirCode = new StringBuilder();
         this.var = new HashMap<>();
-        this.unamedVarCounter = 0;
     }
 
+    /**
+    * Write a indented line in LLVM IR code
+    * @param line indent level
+    * @param indentLevel
+ */
     private void newLine(String line, int indentLevel) {
         llvmirCode.append(" ".repeat(indentLevel)).append(line).append("\n");
     }
 
+    /**
+    * Write a indented line in the LLVM IR code.
+    * @param line
+ */
     private void newLine(String line) {
         newLine(line, indentLevel);
     }
@@ -54,6 +62,9 @@ public class LlvmirGenerator {
     }
 
 
+    /**
+     * Header write at the begining of the LLVM IR code
+     */
     private void header() {
         newLine("Generated LLVM IR code frome ParseTree\n");
         newLine("; External function declarations :");
@@ -87,30 +98,28 @@ public class LlvmirGenerator {
         """);
     }
 
-    private ParseTree getCodeBranch(ParseTree treeNode) {
-        for (ParseTree child : treeNode.getChildren()) {
-            if (child.getLabel().isNonTerminal()) {
-                return child;
-            }
-        }
-        return null;
-    }
-
-    public void newProg(ParseTree treeNode) {
+    /**
+    * Generate LLVM IR code from a ParseTree
+    * @param treeNode
+ */
+    public String generateLLVMIR(ParseTree treeNode) {
         indentLevel = 0;
         header();
         newLine("define i32 @Prog() {");
         newLine("entry:");
 
         indentLevel++;
-        ParseTree code = getCodeBranch(treeNode);
-        if (code != null) {
-            newCodeBranch(code);
+        ParseTree codeNode = treeNode.getChildren().get(1);
+        if (codeNode != null) {
+            newCodeBranch(codeNode);
         }
-        newLine("ret i32 0", 1);
+        newLine("ret i32 0");
 
         indentLevel--;
+
         newLine("}", 0);
+
+        return llvmirCode.toString();
     }
 
     /** Recursive method to chenerate code by reading tree */
@@ -125,7 +134,9 @@ public class LlvmirGenerator {
     }
 
 
-    /** Retrieve the varId of a named var. Create it inplace if not existant */
+    /** Retrieve the varId of a named var. Create it inplace if not existant
+     * as named var are global, no need to look for scope (and there is a garbage collector).
+     */
     private String getOrNewI32(String varName) {
         if (!var.containsKey(varName)) {
             String varId = "%var_" + varName;
@@ -179,6 +190,10 @@ public class LlvmirGenerator {
         }
     }
 
+    /**
+    * Assign a value or ExprArith in a named i32
+    * @param treeNode
+ */
     private void newAssign(ParseTree treeNode) {
         String varName = null;
         ParseTree exprNode = null;
@@ -221,36 +236,49 @@ public class LlvmirGenerator {
         String endLabel = getNewLabel();
 
         //wite conditional branch
+        // only label don't have the "%" in front.
         newLine("br i1 " + condId + ", label %" + thenLabel +  ", label %" + elseLabel);
-        indentLevel++;
         newLine(thenLabel + ":");
+        indentLevel++;
         newCodeBranch(thenNode);
         newLine("br label %" + endLabel);
 
+        indentLevel--;
         newLine(elseLabel + ":");
+        indentLevel++;
         if (elseNode != null) {
             newCodeBranch(elseNode);
         }
-        newLine(endLabel);
         indentLevel--;
+        newLine(endLabel);
     }
 
-    /** Create new inmptication condition <cond> -> <cond> */
+    /**
+    * Create a new cond. Store the result in variable en return the identifier (%).
+    * @param treeNode
+    * @return
+ */
     private String newCond(ParseTree treeNode) {
-        ParseTree child = treeNode.getChildren().getFirst();
-        List<ParseTree> children = child.getChildren();
+        List<ParseTree> children = treeNode.getChildren();
+        String condId = null;
 
-        if (children.size() == 2) {
-            //cond -> cond
+        if (children.size() == 1) {
+            return newCond(children.getFirst());
+        } else {
 
-            // <Cond> -> |<Cond>|
-            String cond1 = newCondAtom(children.get(0));
-            // <Cond> -> <Cond>
-            String cond2 = newCondImpl(children.get(2));
+            LexicalUnit type = children.get(1).getLabel().getType();
+            //cond1 -> cond1
+            if (type == LexicalUnit.IMPLIES) {
+
+            } else if (type == NonTerminal.CO)
+
+
 
             newLine()
 
         }
+
+        return condId;
     }
 
 
