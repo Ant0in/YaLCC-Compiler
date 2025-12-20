@@ -1,5 +1,5 @@
 import java.util.HashMap;
-import java.util.List
+import java.util.List;
 
 /**
  * LLVM IR Generator from yaLcc parse tree
@@ -39,10 +39,16 @@ public class LlvmirGenerator {
         newLine(line, indentLevel);
     }
 
+    /** Create new label name. Will not put "%" before the string (important)
+     */
     private String getNewLabel() {
         return "label" + labelCounter++;
     }
 
+    /**
+    * Create a new unique unamed variable container. "%" in the begining is part of the string as every call nedd it.
+    * @return
+ */
     private String newUnamedI32Id() {
         return "%" + unamedVarCounter++;
     }
@@ -248,7 +254,43 @@ public class LlvmirGenerator {
     }
 
 
-    private void newWhile(ParseTree treeNode) {}
+    private void newWhile(ParseTree treeNode) {
+        ParseTree condNode = null;
+        ParseTree codeNode = null;
+
+        List<ParseTree> children = treeNode.getChildren();
+        for (int i = 0; i < children.size(); i++) {
+            ParseTree child = children.get(i);
+            if (child.getLabel().getValue() == NonTerminal.COND_IMPL) {
+                condNode = child;
+            } else if ( child.getLabel().getType() == LexicalUnit.DO) {
+                codeNode = children.get(1 + i);
+            }
+        }
+
+        newLine("; while");
+        String startWhileLabel = getNewLabel();
+        String codeWhileLabel = getNewLabel();
+        String endWhileLabel = getNewLabel();
+
+        //condition check
+        newLine("br label %" + startWhileLabel);
+        newLine(startWhileLabel + ":");
+        indentLevel++;
+        String condId = newCond(condNode);
+        newLine("br i1 " + condId + ", label %" + codeWhileLabel + ", label %" + endWhileLabel);
+        indentLevel--;
+
+        //while code body
+        newLine(codeWhileLabel + ":");
+        indentLevel++;
+        newCodeBranch(codeNode);
+        newLine("br label %" + startWhileLabel);
+        indentLevel--;
+
+        //end while
+        newLine(endWhileLabel = ":");
+    }
 
     /** Generate output for the grammar:
      * <Output> ==>Print([VarName])
