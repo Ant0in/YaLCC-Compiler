@@ -31,18 +31,18 @@ public class LlvmirGenerator {
     }
 
     /**
-    * Write a indented line in LLVM IR code
-    * @param line indent level
-    * @param indentLevel
- */
+     * Write a indented line in LLVM IR code
+     * @param line indent level
+     * @param indentLevel
+     */
     private void newLine(String line, int indentLevel) {
         llvmirCode.append(" ".repeat(indentLevel)).append(line).append("\n");
     }
 
     /**
-    * Write a indented line in the LLVM IR code.
-    * @param line
- */
+     * Write a indented line in the LLVM IR code.
+     * @param line
+     */
     private void newLine(String line) {
         newLine(line, indentLevel);
     }
@@ -54,13 +54,12 @@ public class LlvmirGenerator {
     }
 
     /**
-    * Create a new unique unamed variable container. "%" in the begining is part of the string as every call nedd it.
-    * @return
- */
+     * Create a new unique unamed variable container. "%" in the begining is part of the string as every call nedd it.
+     * @return
+     */
     private String newUnamedI32Id() {
         return "%" + unamedVarCounter++;
     }
-
 
     /**
      * Header write at the begining of the LLVM IR code
@@ -69,39 +68,43 @@ public class LlvmirGenerator {
         newLine("Generated LLVM IR code frome ParseTree\n");
         newLine("; External function declarations :");
         newLine("declare i32 @getchar () ; gets one character from stdin");
-        newLine("declare i32 @putchar ( i32 ) ; writes one character to stdout");
+        newLine(
+            "declare i32 @putchar ( i32 ) ; writes one character to stdout"
+        );
 
-        newLine("""
-        @.strR = private unnamed_addr constant [3 x i8] c"%d\00", align 1
+        newLine(
+            """
+            @.strR = private unnamed_addr constant [3 x i8] c"%d\00", align 1
 
-        ; Function Attrs: noinline nounwind optnone ssp uwtable
-        define i32 @readInt() #0 {
-          %1 = alloca i32, align 4
-          %2 = call i32 (i8*, ...) @scanf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.strR, i32 0, i32 0), i32* %1)
-          %3 = load i32, i32* %1, align 4
-          ret i32 %3
-        }
+            ; Function Attrs: noinline nounwind optnone ssp uwtable
+            define i32 @readInt() #0 {
+              %1 = alloca i32, align 4
+              %2 = call i32 (i8*, ...) @scanf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.strR, i32 0, i32 0), i32* %1)
+              %3 = load i32, i32* %1, align 4
+              ret i32 %3
+            }
 
-        @.strP = private unnamed_addr constant [4 x i8] c"%d\0A\00", align 1
+            @.strP = private unnamed_addr constant [4 x i8] c"%d\0A\00", align 1
 
-        define void @println(i32 %x) {
-          %1 = alloca i32, align 4
-          store i32 %x, i32* %1, align 4
-          %2 = load i32, i32* %1, align 4
-          %3 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.strP, i32 0, i32 0), i32 %2)
-          ret void
-        }
+            define void @println(i32 %x) {
+              %1 = alloca i32, align 4
+              store i32 %x, i32* %1, align 4
+              %2 = load i32, i32* %1, align 4
+              %3 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.strP, i32 0, i32 0), i32 %2)
+              ret void
+            }
 
-        declare i32 @printf(i8*, ...)
+            declare i32 @printf(i8*, ...)
 
-        declare i32 @scanf(i8*, ...) #1
-        """);
+            declare i32 @scanf(i8*, ...) #1
+            """
+        );
     }
 
     /**
-    * Generate LLVM IR code from a ParseTree
-    * @param treeNode
- */
+     * Generate LLVM IR code from a ParseTree
+     * @param treeNode
+     */
     public String generateLLVMIR(ParseTree treeNode) {
         indentLevel = 0;
         header();
@@ -132,7 +135,6 @@ public class LlvmirGenerator {
             }
         }
     }
-
 
     /** Retrieve the varId of a named var. Create it inplace if not existant
      * as named var are global, no need to look for scope (and there is a garbage collector).
@@ -191,17 +193,23 @@ public class LlvmirGenerator {
     }
 
     /**
-    * Assign a value or ExprArith in a named i32
-    * @param treeNode
- */
+     * Assign a value or ExprArith in a named i32
+     * @param treeNode
+     */
     private void newAssign(ParseTree treeNode) {
         String varName = null;
         ParseTree exprNode = null;
 
         for (ParseTree child : treeNode.getChildren()) {
-            if (child.getLabel().isTerminal() && child.getLabel().getValue() == LexicalUnit.VARNAME) {
+            if (
+                child.getLabel().isTerminal() &&
+                child.getLabel().getValue() == LexicalUnit.VARNAME
+            ) {
                 varName = child.getLabel().getValue().toString();
-            } else if (child.getLabel().isNonTerminal() && child.getLabel().getValue() == NonTerminal.EXPR_ARITH) {
+            } else if (
+                child.getLabel().isNonTerminal() &&
+                child.getLabel().getValue() == NonTerminal.EXPR_ARITH
+            ) {
                 exprNode = child;
             }
         }
@@ -210,21 +218,25 @@ public class LlvmirGenerator {
         storeInNamI32(varName, varId);
     }
 
-
     private void newIf(ParseTree treeNode) {
         ParseTree condNode = null;
         ParseTree thenNode = null;
         ParseTree elseNode = null;
-
 
         List<ParseTree> children = treeNode.getChildren();
         for (int i = 0; i < children.size(); i++) {
             ParseTree child = children.get(i);
             if (child.getLabel().getValue() == NonTerminal.COND_IMPL) {
                 condNode = child;
-            } else if ( child.getLabel().getValue() == LexicalUnit.THEN && i + 1 < children.size()) {
+            } else if (
+                child.getLabel().getValue() == LexicalUnit.THEN &&
+                i + 1 < children.size()
+            ) {
                 thenNode = children.get(1 + i);
-            } else if ( child.getLabel().getValue() == LexicalUnit.ELSE && i + 1 < children.size()) {
+            } else if (
+                child.getLabel().getValue() == LexicalUnit.ELSE &&
+                i + 1 < children.size()
+            ) {
                 elseNode = children.get(1 + i);
             }
         }
@@ -237,7 +249,14 @@ public class LlvmirGenerator {
 
         //wite conditional branch
         // only label don't have the "%" in front.
-        newLine("br i1 " + condId + ", label %" + thenLabel +  ", label %" + elseLabel);
+        newLine(
+            "br i1 " +
+                condId +
+                ", label %" +
+                thenLabel +
+                ", label %" +
+                elseLabel
+        );
         newLine(thenLabel + ":");
         indentLevel++;
         newCodeBranch(thenNode);
@@ -254,33 +273,38 @@ public class LlvmirGenerator {
     }
 
     /**
-    * Create a new cond. Store the result in variable en return the identifier (%).
-    * @param treeNode
-    * @return
- */
+     * Create a new cond. Store the result in variable en return the identifier (%).
+     * @param treeNode
+     * @return
+     */
     private String newCond(ParseTree treeNode) {
         List<ParseTree> children = treeNode.getChildren();
-        String condId = null;
 
-        if (children.size() == 1) {
-            return newCond(children.getFirst());
+        if (treeNode.getLabel().getValue() == NonTerminal.COND_ATOM) {
+            return newCondAtom(treeNode));
         } else {
+            String leftId = newCond(children.get(0));
+            String rightId = newCond(children.get(2));
 
-            LexicalUnit type = children.get(1).getLabel().getType();
-            //cond1 -> cond1
-            if (type == LexicalUnit.IMPLIES) {
+            String notLeft = newUnamedI32Id();
+            newLine(notLeft + " = or i1 " + leftId + ", true");
 
-            } else if (type == NonTerminal.CO)
+            String implId = newUnamedI32Id();
+            newLine(implId + " = or i1 " + notLeft + ", " + rightId);
+        }
 
+        return "";
+    }
 
+    private String newCondAtom(ParseTree treeNode) {
+        ParseTree child = treeNode.getChildren().getFirst();
 
-            newLine()
+        if (child.getLabel().getValue() == NonTerminal.COND_IMPL) {
 
         }
 
-        return condId;
+        return "";
     }
-
 
     private void newWhile(ParseTree treeNode) {
         ParseTree condNode = null;
@@ -291,7 +315,7 @@ public class LlvmirGenerator {
             ParseTree child = children.get(i);
             if (child.getLabel().getValue() == NonTerminal.COND_IMPL) {
                 condNode = child;
-            } else if ( child.getLabel().getType() == LexicalUnit.DO) {
+            } else if (child.getLabel().getType() == LexicalUnit.DO) {
                 codeNode = children.get(1 + i);
             }
         }
@@ -306,7 +330,14 @@ public class LlvmirGenerator {
         newLine(startWhileLabel + ":");
         indentLevel++;
         String condId = newCond(condNode);
-        newLine("br i1 " + condId + ", label %" + codeWhileLabel + ", label %" + endWhileLabel);
+        newLine(
+            "br i1 " +
+                condId +
+                ", label %" +
+                codeWhileLabel +
+                ", label %" +
+                endWhileLabel
+        );
         indentLevel--;
 
         //while code body
@@ -324,7 +355,12 @@ public class LlvmirGenerator {
      * <Output> ==>Print([VarName])
      */
     private void newOutput(ParseTree treeNode) {
-        String varName = treeNode.getChildren().getFirst().getLabel().getValue().toString();
+        String varName = treeNode
+            .getChildren()
+            .getFirst()
+            .getLabel()
+            .getValue()
+            .toString();
 
         newLine("; print(" + varName + ")");
         String valueId = loadI32(varName);
@@ -335,7 +371,12 @@ public class LlvmirGenerator {
      * < Input > ==> Input([VarName])
      */
     private String newInput(ParseTree treeNode) {
-        String varName = treeNode.getChildren().getFirst().getLabel().getValue().toString();
+        String varName = treeNode
+            .getChildren()
+            .getFirst()
+            .getLabel()
+            .getValue()
+            .toString();
 
         newLine("; read(" + varName + ")");
         String valReadId = newUnamedI32Id();
@@ -346,7 +387,6 @@ public class LlvmirGenerator {
     private String newExprArith(ParseTree treeNode) {
         ParseTree child = treeNode.getChildren().getFirst();
         LexicalUnit lexi = child.getLabel().getType();
-
 
         switch (lexi) {
             case LexicalUnit.VARNAME:
@@ -362,9 +402,7 @@ public class LlvmirGenerator {
                 ParseTree exprNode = treeNode.getChildren().get(1);
                 return newExprArith(treeNode);
             default:
-                throw new IllegalStateException(
-                    "Unexpected value: " + lexi
-                );
+                throw new IllegalStateException("Unexpected value: " + lexi);
         }
     }
 }
