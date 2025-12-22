@@ -333,6 +333,25 @@ public class LlvmirGenerator {
     return "";
   }
 
+  private String compOpToLlvmOp(String compOp) {
+    switch (compOp) {
+      case "==":
+        return "eq";
+      case "<":
+        return "slt";
+      case "<=":
+        return "sle";
+      default:
+        throw new IllegalStateException("Unknow comparison opeartor: " + compOp);
+    }
+  }
+
+  /**
+   * Write a new comparison in llvm ir.
+   *
+   * @param treeNode node of the comparison.
+   * @return String id of the unamed i32 holding the result.
+   */
   private String newCondComp(ParseTree treeNode) {
 
     List<ParseTree> children = treeNode.getChildren();
@@ -341,17 +360,27 @@ public class LlvmirGenerator {
     String op = null;
     String righti32Id = null;
 
+    // lest
     lefti32Id = newExprArith(children.get(0));
 
-    LexicalUnit type = child.getLabel().getType();
+    // comparison operator
+    ParseTree comp = children.get(1);
+    LexicalUnit opType = comp.getLabel().getType();
 
-    if (type == LexicalUnit.EQUAL || type == LexicalUnit.SMALLER || type == LexicalUnit.SMALEQ) {
-      op = child.getLabel().getValue().toString();
-      break;
+    if (opType == LexicalUnit.EQUAL || opType == LexicalUnit.SMALLER || opType == LexicalUnit.SMALEQ) {
+      op = comp.getLabel().getValue().toString();
     }
 
+    // right
     righti32Id = newExprArith(children.get(2));
 
+    String compId = compOpToLlvmOp(op);
+
+    String resultId = newUnamedI32Id();
+    newLine("; Comparison");
+    newLine(resultId + " = icmp " + compId + " i32 " + lefti32Id + ", " + righti32Id);
+
+    return resultId;
   }
 
   private void newWhile(ParseTree treeNode) {
@@ -359,12 +388,11 @@ public class LlvmirGenerator {
     ParseTree codeNode = null;
 
     List<ParseTree> children = treeNode.getChildren();
-    for (int i = 0; i < children.size(); i++) {
-      ParseTree child = children.get(i);
+    for (ParseTree child : children) {
       if (child.getLabel().getValue() == NonTerminal.COND_IMPL) {
         condNode = child;
-      } else if (child.getLabel().getType() == LexicalUnit.DO) {
-        codeNode = children.get(1 + i);
+      } else if (child.getLabel().getValue() == NonTerminal.CODE) {
+        codeNode = child;
       }
     }
 
@@ -374,13 +402,14 @@ public class LlvmirGenerator {
     String endWhileLabel = newLabel();
 
     // condition check
+    newLine("; Condition check");
     newLine("br label %" + startWhileLabel);
     newLine(startWhileLabel + ":");
     indentLevel++;
-    String condId = newCond(condNode);
+    String condResultId = newCond(condNode);
     newLine(
         "br i1 " +
-            condId +
+            condResultId +
             ", label %" +
             codeWhileLabel +
             ", label %" +
