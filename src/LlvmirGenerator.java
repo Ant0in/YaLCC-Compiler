@@ -294,7 +294,7 @@ public class LlvmirGenerator {
    * (%).
    * 
    * @param treeNode
-   * @return
+   * @return the unamed i32 id of the result.
    */
   private String newCondImpl(ParseTree treeNode) {
     List<ParseTree> children = treeNode.getChildren();
@@ -307,24 +307,51 @@ public class LlvmirGenerator {
       String leftId = newCond(children.get(0));
       String rightId = newCond(children.get(2));
 
+      newLine("; start of a left -> right");
+
       String notLeft = newUnamedI32Id();
-      newLine(notLeft + " = or i1 " + leftId + ", true");
+      newLine(notLeft + " = or i1 " + leftId + ", true ; invert left");
 
       String implId = newUnamedI32Id();
-      newLine(implId + " = or i1 " + notLeft + ", " + rightId);
+      newLine(implId + " = or i1 " + notLeft + ", " + rightId + "; (not left) or right");
+
+      return implId;
+    }
+  }
+
+  private String newCondAtom(ParseTree treeNode) {
+    ParseTree child = treeNode.getChildren().get(0);
+
+    if (child.getLabel().getValue() == NonTerminal.COND_IMPL) {
+      // COndAtom => | Cond |
+
+    } else {
+      // CondAtom => CondComp
+      return newCondComp(child);
     }
 
     return "";
   }
 
-  private String newCondAtom(ParseTree treeNode) {
-    ParseTree child = treeNode.getChildren().getFirst();
+  private String newCondComp(ParseTree treeNode) {
 
-    if (child.getLabel().getValue() == NonTerminal.COND_IMPL) {
+    List<ParseTree> children = treeNode.getChildren();
 
+    String lefti32Id = null;
+    String op = null;
+    String righti32Id = null;
+
+    lefti32Id = newExprArith(children.get(0));
+
+    LexicalUnit type = child.getLabel().getType();
+
+    if (type == LexicalUnit.EQUAL || type == LexicalUnit.SMALLER || type == LexicalUnit.SMALEQ) {
+      op = child.getLabel().getValue().toString();
+      break;
     }
 
-    return "";
+    righti32Id = newExprArith(children.get(2));
+
   }
 
   private void newWhile(ParseTree treeNode) {
