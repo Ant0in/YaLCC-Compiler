@@ -463,52 +463,76 @@ public class LlvmirGenerator {
     return valReadId;
   }
 
+  /**
+   * Write a new expr arithmetic in llvm ir.
+   *
+   * @param treeNode ParseTree node of the expr arithm.
+   * @return String id of the unamed i32 holding the result.
+   */
   private String newExprArith(ParseTree treeNode) {
     ParseTree child = treeNode.getChildren().get(0);
-    return newExprArith(child);
+    newLine("; new ExppArith");
+    indentLevel++;
+    return newExprAddSub(child);
+    indentLevel--;
 
   }
 
   /**
-   * v[TODO:descriptioo_n]
+   * Write a new expr arithmetic add or sub in llvm ir.
+   * ExprAddSub => ExprMulDiv { (+|-) ExprMulDiv }*
    *
-   * @param treeNode [TODO:parameter]
-   * @return [TODO:return]
+   * @param treeNode ParseTree node of the ExprAddSub
+   * @return String of the unamed i32 id containing the result.
    */
   private String newExprAddSub(ParseTree treeNode) {
     List<ParseTree> children = treeNode.getChildren();
-    String leftResultId = newExprMulDiv(children.get(0));
+    String resultId = newExprMulDiv(children.get(0));
 
     for (int i = 1; i < children.size(); i += 2) {
       LexicalUnit op = children.get(i).getLabel().getType();
-      String rightId = newExprMulDiv(children.get(i + 1));
 
+      String newExprMulDiv = newExprMulDiv(children.get(i + 1));
       String newResultId = newUnamedI32Id();
+
       if (op == LexicalUnit.PLUS) {
-        newLine(newResultId + " = i32 " + leftResultId + ", " + rightId);
+        newLine(newResultId + " = i32 " + resultId + ", " + newExprMulDiv);
       } else if (op == LexicalUnit.MINUS) {
-        newLine(newResultId + " = sub i32 " + leftResultId + ", " + rightId);
+        newLine(newResultId + " = sub i32 " + resultId + ", " + newExprMulDiv);
       }
-      result = lefResultId;
+      resultId = newResultId;
     }
-    return newNesultId;
+    return resultId;
   }
 
   private String newExprMulDiv(ParseTree treeNode) {
     List<ParseTree> children = treeNode.getChildren();
-    String resultId = newExprArith(children.get(0));
+    String resultId = newExprUnary(children.get(0));
 
-    for (int i; i < children.size(); i += 2) {
+    for (int i = 1; i < children.size(); i += 2) {
+      LexicalUnit op = children.get(i).getLabel().getType();
+
+      String newExprUnary = newExprUnary(children.get(i + 1));
+      String newResultId = newUnamedI32Id();
+
+      if (op == LexicalUnit.TIMES) {
+        newLine(newResultId + " = mul i32 " + resultId + ", " + newExprUnary);
+      } else if (op == LexicalUnit.DIVIDE) {
+        newLine(newResultId + " = sdiv i32 " + resultId + ", " + newExprUnary);
+      }
+
+      resultId = newResultId;
     }
+    return resultId;
   }
 
   private String newExprUnary(ParseTree treeNode) {
     List<ParseTree> children = treeNode.getChildren();
 
     if (children.get(0).getLabel().getType() == LexicalUnit.MINUS) {
-      String operandId = newExprUnary(children.get(1));
+      String newExprPrimary = newExprPrimary(children.get(1));
       String resultId = newUnamedI32Id();
-      newLine(resultId + " = sub i32 0, " + operandId);
+      newLine(resultId + " = sub i32 0, " + newExprPrimary);
       return resultId;
     } else {
       return newExprPrimary(children.get(0));
