@@ -473,8 +473,9 @@ public class LlvmirGenerator {
     ParseTree child = treeNode.getChildren().get(0);
     newLine("; new ExppArith");
     indentLevel++;
-    return newExprAddSub(child);
+    String result = newExprAddSub(child);
     indentLevel--;
+    return result;
 
   }
 
