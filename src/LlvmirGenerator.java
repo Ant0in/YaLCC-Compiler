@@ -52,13 +52,13 @@ public class LlvmirGenerator {
   /**
    * Create new label name. Will not put "%" before the string (important)
    */
-  private String getNewLabel() {
+  private String newLabel() {
     return "label" + labelCounter++;
   }
 
   /**
    * Create a new unique unamed variable container. "%" in the begining is part of
-   * the string as every call nedd it.
+   * the string at every call need it.
    *
    * @return
    */
@@ -76,8 +76,10 @@ public class LlvmirGenerator {
     newLine(
         "declare i32 @putchar ( i32 ) ; writes one character to stdout");
 
+    // input and output functions
     newLine(
         """
+            ; declare output and input functions.
             @.strR = private unnamed_addr constant [3 x i8] c"%d\00", align 1
 
             ; Function Attrs: noinline nounwind optnone ssp uwtable
@@ -105,9 +107,10 @@ public class LlvmirGenerator {
   }
 
   /**
-   * Generate LLVM IR code from a ParseTree
+   * generate LLVM IR code from a ParseTree root program
    *
-   * @param treeNode
+   * @param treeNode ParseTree root node.
+   * @return String of generated LLVM IR code.
    */
   public String generateLLVMIR(ParseTree treeNode) {
     indentLevel = 0;
@@ -199,7 +202,7 @@ public class LlvmirGenerator {
   }
 
   /**
-   * Assign a value or ExprArith in a named i32
+   * Assign a value or ExprArith to a named i32
    *
    * @param treeNode
    */
@@ -221,6 +224,11 @@ public class LlvmirGenerator {
     storeInNamI32(varName, varId);
   }
 
+  /**
+   * Strat of an if statement.
+   *
+   * @param treeNode if PaserTree node.
+   */
   private void newIf(ParseTree treeNode) {
     ParseTree condNode = null;
     ParseTree thenNode = null;
@@ -242,12 +250,11 @@ public class LlvmirGenerator {
 
     // jump labels
     String condId = newCond(condNode);
-    String thenLabel = getNewLabel();
-    String elseLabel = getNewLabel();
-    String endLabel = getNewLabel();
+    String thenLabel = newLabel();
+    String elseLabel = newLabel();
+    String endLabel = newLabel();
 
-    // wite conditional branch
-    // only label don't have the "%" in front.
+    // write conditional branch
     newLine(
         "br i1 " +
             condId +
@@ -271,28 +278,44 @@ public class LlvmirGenerator {
   }
 
   /**
-     * Create a new cond. Store the result in variable en return the identifier (%).
-     * @param treeNode
-     * @return
-     */
-    private String newCond(ParseTree treeNode) {
-        List<ParseTree> children = treeNode.getChildren();
+   * New condition. Value of the result is stored in a unamed i32.
+   *
+   * @param treeNode node of Cond ParseTree
+   * @return String i32 identifier of the result.
+   */
+  private String newCond(ParseTree treeNode) {
+    //  Con -> cond_impl
+    ParseTree child = treeNode.getChildren().get(0); // only one child for Cond.
+    return newCondImpl(child);
+  }
 
-        if (treeNode.getLabel().getValue() == NonTerminal.COND_ATOM) {
-            return newCondAtom(treeNode));
-        } else {
-            String leftId = newCond(children.get(0));
-            String rightId = newCond(children.get(2));
+  /**
+   * Create a new cond impl. Store the result in variable en return the identifier
+   * (%).
+   * 
+   * @param treeNode
+   * @return
+   */
+  private String newCondImpl(ParseTree treeNode) {
+    List<ParseTree> children = treeNode.getChildren();
 
-            String notLeft = newUnamedI32Id();
-            newLine(notLeft + " = or i1 " + leftId + ", true");
+    if (treeNode.getLabel().getValue() == NonTerminal.COND_ATOM) {
+      // CondImpl => CondAtom
+      return newCondAtom(children.get(0));
+    } else {
+      // CondImpl => CondAtom -> CondImpl
+      String leftId = newCond(children.get(0));
+      String rightId = newCond(children.get(2));
 
-            String implId = newUnamedI32Id();
-            newLine(implId + " = or i1 " + notLeft + ", " + rightId);
-        }
+      String notLeft = newUnamedI32Id();
+      newLine(notLeft + " = or i1 " + leftId + ", true");
 
-        return "";
+      String implId = newUnamedI32Id();
+      newLine(implId + " = or i1 " + notLeft + ", " + rightId);
     }
+
+    return "";
+  }
 
   private String newCondAtom(ParseTree treeNode) {
     ParseTree child = treeNode.getChildren().getFirst();
@@ -319,9 +342,9 @@ public class LlvmirGenerator {
     }
 
     newLine("; while");
-    String startWhileLabel = getNewLabel();
-    String codeWhileLabel = getNewLabel();
-    String endWhileLabel = getNewLabel();
+    String startWhileLabel = newLabel();
+    String codeWhileLabel = newLabel();
+    String endWhileLabel = newLabel();
 
     // condition check
     newLine("br label %" + startWhileLabel);
