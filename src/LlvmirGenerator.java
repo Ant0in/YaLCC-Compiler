@@ -6,10 +6,6 @@ import java.util.List;
  */
 public class LlvmirGenerator {
 
-  /** Top of Paser Tree */
-  private final ParseTree parseTree;
-
-  /** String of code appended during build */
   private StringBuilder llvmirCode;
 
   /** Map of named var and their identifier */
@@ -25,7 +21,6 @@ public class LlvmirGenerator {
   private int indentLevel = 0;
 
   public LlvmirGenerator(ParseTree parseTree) {
-    this.parseTree = parseTree;
     this.llvmirCode = new StringBuilder();
     this.var = new HashMap<>();
   }
@@ -548,47 +543,30 @@ public class LlvmirGenerator {
   }
 
   private String newExprPrimary(ParseTree treeNode) {
-    ParseTree child = treeNode.getChildren().get(0);
-    LexicalUnit lexi = child.getLabel().getType();
-
-    switch (lexi) {
-      case VARNAME:
-        String varId = child.getLabel().getValue().toString();
-        return loadI32(varId);
-      case NUMBER:
-        String number = child.getLabel().getValue().toString();
-        String numberId = newUnamedI32Id();
-
-        newLine(numberId + " = add i32 0, " + number);
-        return numberId;
-      case LPAREN:
-        ParseTree exprNode = treeNode.getChildren().get(1);
-        return newExprArith(exprNode);
-      default:
-        throw new IllegalStateException("Unexpected value: " + lexi);
-    }
-  }
-
-  private String generateExprPrimary(ParseTree node) {
     // ExprPrimary → VarName | Number | ( ExprArith )
-    ParseTree child = node.getChildren().get(0);
-    LexicalUnit type = child.getSymbol().getType();
+    ParseTree child = treeNode.getChildren().get(0);
+    LexicalUnit type = child.getLabel().getType();
 
     if (type == LexicalUnit.VARNAME) {
-      // Load variable
-      String varName = child.getSymbol().getValue();
-      return loadVariable(varName);
+
+      String varName = child.getLabel().getValue().toString();
+
+      return loadI32(varName);
     } else if (type == LexicalUnit.NUMBER) {
-      // Load immediate constant
-      String value = child.getSymbol().getValue();
-      String result = nextRegister();
-      emitIndent(result + " = add i32 0, " + value + "  ; constant");
-      return result;
+
+      String number = child.getLabel().getValue().toString();
+      String resultId = newUnamedI32Id();
+
+      newLine(resultId + " = add i32 0, " + number);
+
+      return resultId;
     } else if (type == LexicalUnit.LPAREN) {
-      // Parenthesized expression
-      ParseTree exprNode = node.getChildren().get(1);
-      return generateExprArith(exprNode);
+
+      ParseTree exprNode = treeNode.getChildren().get(1);
+
+      return newExprArith(exprNode);
     } else {
+
       throw new RuntimeException(
           "Unexpected primary expression type: " + type);
     }
