@@ -219,6 +219,8 @@ public class LLVMIRGenerator {
       } else if (child.getLabel().isNonTerminal() &&
           child.getLabel().getValue() == NonTerminal.EXPR_ADDSUB) {
         varId = newExprAddSub(child);
+      } else if (child.getLabel().getValue() == NonTerminal.EXPR_MULDIV) {
+        varId = newExprMulDiv(child);
       }
 
     }
@@ -487,11 +489,22 @@ public class LLVMIRGenerator {
    */
   private String newExprArith(ParseTree treeNode) {
     ParseTree child = treeNode.getChildren().get(0);
+    String resultId = null;
     newLine("; new ExppArith");
     indentLevel++;
-    String result = newExprAddSub(child);
+    if (treeNode.getLabel().getValue() == NonTerminal.EXPR_ADDSUB) {
+      resultId = newExprAddSub(treeNode);
+    } else if (treeNode.getLabel().getValue() == NonTerminal.EXPR_MULDIV) {
+      resultId = newExprAddSub(treeNode);
+    } else if (child.getLabel().getValue() == NonTerminal.EXPR_ADDSUB) {
+      resultId = newExprAddSub(child);
+    } else {
+      throw new RuntimeException(
+          "Expected EXPR_ADDSUB but found " +
+              child.getLabel().getValue());
+    }
     indentLevel--;
-    return result;
+    return resultId;
   }
 
   /**
@@ -508,19 +521,31 @@ public class LLVMIRGenerator {
     for (int i = 1; i < children.size(); i += 2) {
       LexicalUnit op = children.get(i).getLabel().getType();
 
-      String newExprMulDiv = newExprMulDiv(children.get(i + 1));
+      String newExprResult = null;
+      if (children.get(i + 1).getLabel().getValue() == NonTerminal.EXPR_MULDIV) {
+        newExprResult = newExprMulDiv(children.get(i + 1));
+      } else if (children.get(i + 1).getLabel().getValue() == NonTerminal.EXPR_ADDSUB) {
+        newExprResult = newExprAddSub(children.get(i + 1));
+      } else if (children.get(i + 1).getLabel().getType() == LexicalUnit.VARNAME
+          || children.get(i + 2).getLabel().getType() == LexicalUnit.NUMBER) {
+        newExprResult = newExprPrimary(children.get(i + 1));
+      } else {
+        throw new RuntimeException(
+            "Expected EXPR_MULDIV but found " +
+                children.get(i + 1).getLabel().getValue());
+      }
       String newResultId = newUnamedI32Id();
 
       if (op == LexicalUnit.PLUS) {
         newLine(
-            newResultId + " = i32 " + resultId + ", " + newExprMulDiv);
+            newResultId + " = i32 " + resultId + ", " + newExprResult);
       } else if (op == LexicalUnit.MINUS) {
         newLine(
             newResultId +
                 " = sub i32 " +
                 resultId +
                 ", " +
-                newExprMulDiv);
+                newExprResult);
       }
       resultId = newResultId;
     }
