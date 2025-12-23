@@ -1,172 +1,200 @@
-
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
 
 /**
- * Represents a parse tree node for YaLCC.
- * It can be a leaf or an internal node with children.
- * Each node has a label (Symbol) and a rule number.
+ * A skeleton class to represent parse trees.
+ * 
+ * The arity is not fixed: a node can have 0, 1 or more children.
+ * Trees are represented in the following way: Tree :== Symbol * List&lt;Tree&gt;
+ * In other words, trees are defined recursively: A tree is a root (with a label of type Symbol) and a list of trees children. Thus, a leaf is simply a tree with no children (its list of children is empty). This class can also be seen as representing the Node of a tree, in which case a tree is simply represented as its root.
+ * 
+ * @author Léo Exibard, Sarah Winter, edited by Mathieu Sassolas
  */
+
 public class ParseTree {
-
-    /** The label symbol for this node */
-    private final Symbol label;
-
-    /** The list of child nodes */
-    private final List<ParseTree> children;
-
-    /** The rule number used to create this node */
-    private int ruleNumber;
+    /**
+     * The label of the root of the tree.
+     */
+    private Symbol label;
+    
+    /**
+     * The list of childrens of the root node, which are trees themselves.
+     */
+    private List<ParseTree> children;
 
     /**
-     * Creates a leaf node with a given symbol.
-     * This node has no children, and rule number is set to -1.
-     * @param lbl the symbol labeling this node
+     * Creates a singleton tree with only a root labeled by lbl.
+     * 
+     * @param lbl The label of the root
      */
     public ParseTree(Symbol lbl) {
         this.label = lbl;
-        this.children = new ArrayList<>();
-        this.ruleNumber = -1;
+        this.children = new ArrayList<ParseTree>(); // This tree has no children
+    }
+    
+    /**
+     * Creates a singleton tree with only a root labeled by terminal lbl.
+     * 
+     * @param lbl The label of the root
+     */
+    public ParseTree(LexicalUnit lbl) {
+        this.label = new Symbol(lbl);
+        this.children = new ArrayList<ParseTree>(); // This tree has no children
+    }
+    
+    /**
+     * Creates a singleton tree with only a root labeled by variable lbl.
+     * 
+     * @param lbl The label of the root
+     */
+    public ParseTree(NonTerminal lbl) {
+        this.label = new Symbol(null,lbl);
+        this.children = new ArrayList<ParseTree>(); // This tree has no children
     }
 
     /**
-     * Creates a node with a symbol, a list of children and a rule number.
-     * @param lbl the symbol labeling this node
-     * @param chdn the list of child nodes
-     * @param ruleNum the rule number used to create this node
+     * Creates a tree with root labeled by lbl and children chdn.
+     * 
+     * @param lbl  The label of the root
+     * @param chdn Its children
      */
-    public ParseTree(Symbol lbl, List<ParseTree> chdn, int ruleNum) {
+    public ParseTree(Symbol lbl, List<ParseTree> chdn) {
         this.label = lbl;
         this.children = chdn;
-        this.ruleNumber = ruleNum;
     }
-
     /**
-     * Adds a child node to this node.
-     * @param child the child node to add
+     * Creates a tree with root labeled by terminal lbl and children chdn.
+     * 
+     * @param lbl  The label of the root
+     * @param chdn Its children
      */
-    public void addChild(ParseTree child) {
-        children.add(child);
+    public ParseTree(LexicalUnit lbl, List<ParseTree> chdn) {
+        this.label = new Symbol(lbl);
+        this.children = chdn;
     }
-
     /**
-     * Returns the list of child nodes
-     * @return the list of child nodes
+     * Creates a tree with root labeled by variable lbl and children chdn.
+     * 
+     * @param lbl  The label of the root
+     * @param chdn Its children
      */
-    public List<ParseTree> getChildren() {
-        return children;
+    public ParseTree(NonTerminal lbl, List<ParseTree> chdn) {
+        this.label = new Symbol(null,lbl);
+        this.children = chdn;
     }
 
+    /* Pure LaTeX version (using the forest package) */
     /**
-     * Returns the rule number
-     * @return the rule number
-     */
-    public int getRuleNumber() {
-        return ruleNumber;
-    }
-
-    /**
-     * Sets the rule number
-     * @param ruleNumber the rule number to set
-     */
-    public void setRuleNumber(int ruleNumber) {
-        this.ruleNumber = ruleNumber;
-    }
-
-    /**
-     * Returns the label symbol
-     * @return the label symbol
-     */
-    public Symbol getLabel() {
-        return label;
-    }
-
-    /**
-     * Writes the tree in LaTeX forest format.
-     * @return the tree in LaTeX forest format
+     * Writes the tree as LaTeX code.
+     * 
+     * @return the String representation of the tree as LaTeX code.
      */
     public String toLaTexTree() {
-
-        // forest format: [ {label} child1 child2 ... childN ]
         StringBuilder treeTeX = new StringBuilder();
-        String fillColor = label.isTerminal() ? "blue!20" : "red!20";
-
-        // open this node (with label and color)
-        treeTeX.append("[{").append(label.toTexString()).append("}, fill=").append(fillColor).append(" ");
+        treeTeX.append("[");
+        treeTeX.append("{" + label.toTexString() + "}");   // Implement this yourself in Symbol.java
+        treeTeX.append(" ");
 
         for (ParseTree child : children) {
-            // recursively add child trees
             treeTeX.append(child.toLaTexTree());
         }
-
-        // close this node
         treeTeX.append("]");
-
         return treeTeX.toString();
-
     }
 
     /**
-     * Writes the tree as TikZ code.
-     * @return the tree as TikZ code
-     */
-    public String toTikZ() {
-
-        // TikZ format: node {label} child { child1 } child { child2 } ... child { childN }
-
-        StringBuilder treeTikZ = new StringBuilder();
-
-        // open this node
-        treeTikZ.append("node {");
-        treeTikZ.append(label.toTexString());
-        treeTikZ.append("}\n");
-
-        // recursively add child nodes
-        for (ParseTree child : children) {
-            treeTikZ.append("child { ");
-            treeTikZ.append(child.toTikZ());
-            treeTikZ.append(" }\n");
-        }
-
-        // close this node and return
-        return treeTikZ.toString();
-
-    }
-
-    /**
-     * Writes the tree as a TikZ picture. TiKz picture can be used in LaTeX documents.
-     * @return the tree as a TikZ picture
-     */
-    public String toTikZPicture() {
-        return "\\begin{tikzpicture}[tree layout]\n\\" + toTikZ() + ";\n\\end{tikzpicture}";
-    }
-
-
-    /**
-     * Writes the tree as a forest picture. Returns the tree in forest enviroment
-     * using the latex code of the tree
-     * @return the tree as a forest picture
+     * Writes the tree as a forest picture. Returns the tree in forest enviroment using the LaTeX code of the tree.
+     * 
+     * @return the String representation of the tree as forest LaTeX code.
      */
     public String toForestPicture() {
-        return "\\begin{forest}for tree={rectangle, draw, l sep=20pt, edge={->, rounded corners},"
-                + "parent anchor=south, child anchor=north, font=\\small}" + toLaTexTree() + ";\n\\end{forest}";
+        return "\\begin{forest}for tree={rectangle, draw, l sep=20pt}" + toLaTexTree() + ";\n\\end{forest}";
     }
 
     /**
      * Writes the tree as a LaTeX document which can be compiled using PDFLaTeX.
      * 
+     * This method uses the forest package.
      * <br>
      * <br>
      * The result can be used with the command:
+     * 
      * <pre>
      * pdflatex some-file.tex
      * </pre>
      * 
-     * @return the tree as a LaTeX document
+     * @return a String of a full LaTeX document (to be compiled with pdflatex)
      */
-    public String toLaTeX() {
-        return "\\documentclass[border=5pt]{standalone}\n\n\\usepackage{tikz}\n\\usepackage{forest}\n\n\\begin{document}\n\n"
-                + toForestPicture() + "\n\n\\end{document}\n%% Local Variables:\n%% TeX-engine: pdflatex\n%% End:";
+    public String toLaTeXusingForest() {
+        return "\\documentclass[border=5pt]{standalone}\n\n\\usepackage{forest}\n\n\\begin{document}\n\n" +
+                toForestPicture()
+                + "\n\n\\end{document}\n%% Local Variables:\n%% TeX-engine: lualatex\n%% End:";
     }
 
+    /* Tikz version (using graphs and graphdrawing libraries, with GD library trees, requiring LuaLaTeX) */
+    /**
+     * Writes the tree as TikZ code. TikZ is a language to specify drawings in LaTeX files.
+     * 
+     * @return the String representation of the tree as TikZ code.
+     */
+    public String toTikZ() {
+        StringBuilder treeTikZ = new StringBuilder();
+        treeTikZ.append("node {");
+        treeTikZ.append(label.toTexString());  // Implement this yourself in Symbol.java
+        treeTikZ.append("}\n");
+        for (ParseTree child : children) {
+            treeTikZ.append("child { ");
+            treeTikZ.append(child.toTikZ());
+            treeTikZ.append(" }\n");
+        }
+        return treeTikZ.toString();
+    }
+
+    /**
+     * Writes the tree as a TikZ picture. A TikZ picture embeds TikZ code so that LaTeX undertands it.
+     * 
+     * @return the String representation of the tree as a TikZ picture.
+     */
+    public String toTikZPicture() {
+        return "\\begin{tikzpicture}[tree layout,every node/.style={draw,rounded corners=3pt}]\n\\" + toTikZ() + ";\n\\end{tikzpicture}";
+    }
+
+    /**
+     * Writes the tree as a LaTeX document which can be compiled using LuaLaTeX.
+     * 
+     * This method uses the Tikz package.
+     * <br>
+     * <br>
+     * The result can be used with the command:
+     * 
+     * <pre>
+     * lualatex some-file.tex
+     * </pre>
+     * 
+     * @return a String of a full LaTeX document (to be compiled with lualatex)
+     */
+    public String toLaTeXusingTikz() {
+        return "\\documentclass[border=5pt]{standalone}\n\n\\usepackage{tikz}\\usetikzlibrary{graphs,graphdrawing}\\usegdlibrary{trees}\n\n\\begin{document}\n\n" +
+                toTikZPicture()
+                + "\n\n\\end{document}\n%% Local Variables:\n%% TeX-engine: lualatex\n%% End:";
+    }
+
+    /* Alias */
+    /**
+     * Writes the tree as a LaTeX document which can be compiled using LuaLaTeX.
+     * 
+     * This is an alias of {@link toLaTeXusingForest() toLaTeXusingForest}.
+     * <br>
+     * <br>
+     * The result can be used with the command:
+     * 
+     * <pre>
+     * pdflatex some-file.tex
+     * </pre>
+     * 
+     * @return a String of a full LaTeX document (to be compiled with pdflatex)
+     */
+    public String toLaTeX() {
+        return this.toLaTeXusingForest();
+    }
 }

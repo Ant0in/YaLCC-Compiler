@@ -1,60 +1,111 @@
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
- * Exception thrown when a parsing error occurs.
- * Includes details about the error location and expected vs found tokens.
+ * Exception to be raised when the parsing fails.
+ * 
+ * @author Not fully determined but assmed to be among Marie Van Den Bogaard, Léo Exibard, Gilles Geeraerts. Javadoc by Mathieu Sassolas.
  */
 public class ParseException extends Exception {
-
-    /** Line number where the error occurred */
-    private final int line;
-
-    /** Column number where the error occurred */
-    private final int column;
-
-    /** The expected lexical unit */
-    private final LexicalUnit expected;
-
-    /** The found lexical unit */
-    private final LexicalUnit found;
+    /**
+     * Current start of the word (look-ahead) when the error happened.
+     */
+    private Symbol token;
+    
+    /**
+     * Symbol at the top of the stack when the error happened.
+     */
+    private NonTerminal variable;
+    
+    /**
+     * List of possible terminal symbols allowed as look-ahead.
+     */
+    private List<LexicalUnit> alternatives;
 
     /**
-     * Constructs a ParseException with detailed information.
-     * @param message the error message
-     * @param line the line number of the error
-     * @param column the column number of the error
-     * @param expected the expected lexical unit
-     * @param found the found lexical unit
+     * Raises an exception on the given look-ahead.
+     * 
+     * @param symbol the token on which the error happened.
      */
-    public ParseException(String message, int line, int column, LexicalUnit expected, LexicalUnit found) {
-        super(message);
-        this.line = line;
-        this.column = column;
-        this.expected = expected;
-        this.found = found;
+    public ParseException(Symbol symbol){
+        this.token = symbol;
+        this.alternatives = new ArrayList<LexicalUnit>();
     }
 
     /**
-     * Returns the line number of the error.
-     * @return the line number
+     * Raises an exception on the given look-ahead and stack top.
+     * 
+     * @param symbol the token on which the error happened.
+     * @param var the (non-terminal) top of the stack when the error happened.
      */
-    public int getLine() { return line; }
+    public ParseException(Symbol symbol, NonTerminal var){
+        this.token = symbol;
+        this.variable = var;
+        this.alternatives = new ArrayList<LexicalUnit>();
+    }
 
     /**
-     * Returns the column number of the error.
-     * @return the column number
+     * Raises an exception on the given look-ahead.
+     * 
+     * @param symbol the token on which the error happened.
+     * @param alts the list of expected terminals.
      */
-    public int getColumn() { return column; }
+    public ParseException(Symbol symbol, List<LexicalUnit> alts){
+        this.token = symbol;
+        this.alternatives = alts;
+    }
 
     /**
-     * Returns the expected lexical unit.
-     * @return the expected lexical unit
+     * Raises an exception on the given look-ahead and stack top.
+     * 
+     * @param symbol the token on which the error happened.
+     * @param var the (non-terminal) top of the stack when the error happened.
+     * @param alts the list of expected terminals.
      */
-    public LexicalUnit getExpected() { return expected; }
+    public ParseException(Symbol symbol, NonTerminal var, List<LexicalUnit> alts){
+        this.token = symbol;
+        this.variable = var;
+        this.alternatives = alts;
+    }
 
     /**
-     * Returns the found lexical unit.
-     * @return the found lexical unit
+     * Joins the list of expected terminals in a readable way.
+     * 
+     * @return a String containing the list of expected terminals (with English fillers).
      */
-    public LexicalUnit getFound() { return found; }
+    private String stringOfAlternatives(){
+        StringBuilder altString = new StringBuilder();
+        // We want a special condition for the last element
+        if (alternatives.isEmpty()) {
+            return "";
+        } else {
+            altString.append("expected ");
+            boolean first = true;
+            for (LexicalUnit term: alternatives) {
+                if (first) {
+                    first = false;
+                } else {
+                    altString.append(", ");
+                }
+                altString.append(term);
+            }
+            altString.append(", but got ");
+            return altString.toString();
+        }
+    }
 
+    /**
+     * Returns the detailed message string of this exception.
+     * 
+     * @return the String message (in English) explaining the parsing error.
+     */
+    @Override
+    public String getMessage(){
+        if (variable == null) {
+            return String.format("Parsing Error at line %d and column %d: %s%s", token.getLine(), token.getColumn(), stringOfAlternatives(), token.getValue());
+        } else {
+            return String.format("Parsing Error at line %d and column %d trying to parse %s: %s%s", token.getLine(), token.getColumn(), variable.toString(), stringOfAlternatives(), token.getValue().toString());
+        }
+    }
 }

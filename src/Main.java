@@ -1,76 +1,105 @@
+import java.io.FileReader;
+import java.io.FileNotFoundException;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 
-import java.io.*;
-
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.TreeMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
- * Main class to run the IR Generator for YaLCC.
- * Read a source file, parse it, and print the LLVM IR generated code.
+ *
+ * Project Part 2: Parser
+ *
+ * @author Marie Van Den Bogaard, Léo Exibard, Gilles Geeraerts, Sarah Winter, edited by Mrudula Balachander
+ *
  */
-public class Main {
 
+public class Main{
     /**
-     * Main method to run the parser.
-     * @param args command line arguments; expects source file only.
+     *
+     * The parser
+     *
+     * @param args  The argument(s) given to the program
+     * @throws IOException java.io.IOException if an I/O-Error occurs
+     * @throws FileNotFoundException java.io.FileNotFoundException if the specified file does not exist
+     *
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FileNotFoundException, IOException, SecurityException, Exception{
+        // Display the usage when no arguments are given
+        if(args.length == 0){
+            System.out.println("Usage:  java -jar part2.jar [OPTION] [FILE]\n"
+                               + "\tOPTION:\n"
+                               + "\t -wt (write-tree) filename.tex: writes latex tree to filename.tex\n"
+                               + "\t -dr (display-rules): writes each rule in full\n"
+                               + "\tFILE:\n"
+                               + "\tA .ycc file containing a YALCC program\n"
+                               );
+            System.exit(0);
+        } else {
+            boolean writeTree = false;
+            boolean fullOutput = false;
+            BufferedWriter bwTree = null;
+            FileWriter fwTree = null;
+            FileReader codeSource = null;
+            try {
+                codeSource = new FileReader(args[args.length-1]);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            ParseTree parseTree = null;
+            String tex="\\documentclass{standalone}\\begin{document}Parsing error, no tree produced.\\end{document}";
 
-        // parse according to part 3 (bye bye my clean parser)
-        if (args.length != 1) {
-            System.err.println("Usage: java -jar part3.jar sourceFile.ycc");
-            System.exit(1);
+            for (int i = 0 ; i < args.length; i++) {
+                if (args[i].equals("-wt") || args[i].equals("--write-tree")) {
+                    writeTree = true;
+                    try {
+                        fwTree = new FileWriter(args[i+1]);
+                        bwTree = new BufferedWriter(fwTree);
+                        //System.out.println("Opened file " + args[i+1]) ;
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (args[i].equals("-dr") || args[i].equals("--display-rules") ) {
+                    fullOutput = true;
+                }
+            }
+            Parser parser = new Parser(codeSource);
+            if (fullOutput) {parser.displayFullRules();}
+            try {
+                parseTree = parser.parse();
+                if (writeTree) {tex=parseTree.toLaTeX();};
+            } catch (ParseException e) {
+                System.out.println("Error:> " + e.getMessage());
+            } catch (Exception e) {
+                System.out.println("Error:> " + e);
+            }
+            if (writeTree) {
+                try {
+                    bwTree.write(tex);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        if (bwTree != null)
+                            bwTree.close();
+                        if (fwTree != null)
+                            fwTree.close();
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
         }
-
-        String inputFile = args[0];
-        ParseTree tree = parseFile(inputFile);
-
-        if (tree == null) {
-            System.exit(1); // parsing failed
-        }
-
-        // debug print to help me out duh
-        System.out.println(tree.toLaTeX());
-
-        // generate the IR
-        LLVMIRGenerator gen = new LLVMIRGenerator();
-        String llvmCode = gen.generateLLVMIR(tree);
-
-        // display the llvm IR string
-        System.out.println(llvmCode);
-
     }
 
-    /**
-     * Parses the input file and returns the parse tree.
-     * @param filename the source file to parse
-     * @return the resulting parse tree
-     */
-    private static ParseTree parseFile(String filename) {
-
-        ParseTree tree = null;
-
-        // try parsing the file
-        try (FileReader fr = new FileReader(filename)) {
-
-            // create lexer and parser, and parse the program
-            LexicalAnalyzer lexer = new LexicalAnalyzer(fr);
-            Parser parser = new Parser(lexer);
-            tree = parser.parseProgram();
-
-        } catch (ParseException pe) {
-
-            // handle parsing errors
-            System.err.println("[e] Parse Error at line " + pe.getLine() + ", column " + pe.getColumn() + ": " + pe.getMessage());
-            System.err.println("    Expected: " + pe.getExpected() + ", Found: " + pe.getFound());
-
-        } catch (IOException ioe) {
-
-            // handle I/O errors
-            System.err.println("[e] I/O Error: " + ioe.getMessage());
-
-        }
-    
-        return tree;
-
-    }
-
+    /** Default constructor (should not be used) */
+    private Main(){};
 }
