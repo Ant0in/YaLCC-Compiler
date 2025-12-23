@@ -55,10 +55,38 @@ public class LLVMIRGenerator {
    * Create a new unique unamed variable container. "%" in the begining is part of
    * the string at every call need it.
    *
-   * @return
+   * @return String "%<number>" of the new unamed i32 variable.
    */
   private String newUnamedI32Id() {
     return "%" + unamedVarCounter++;
+  }
+
+  /**
+   * Retrieve the varId of a named var. Create it inplace if not existant
+   * as named var are global, no need to look for scope (and there is a garbage
+   * collector).
+   */
+  private String getOrNewI32(String varName) {
+    if (!var.containsKey(varName)) {
+      String varId = "%var_" + varName;
+      var.put(varName, varId);
+      newLine(varId + " = alloca i32");
+    }
+    return var.get(varName);
+  }
+
+  /** load a named var into a new unamed var. Create named var if non existant */
+  private String loadI32(String varName) {
+    String varId = getOrNewI32(varName);
+    String unamedI32Id = newUnamedI32Id();
+    newLine(unamedI32Id + " = load i32, i32 * " + varId);
+    return unamedI32Id;
+  }
+
+  /** store an unamed var into a named var. Create named var if non existant */
+  private void storeInNamI32(String varName, String unamedI32Id) {
+    String varId = getOrNewI32(varName);
+    newLine("store i32 " + unamedI32Id + ", i32* " + varId);
   }
 
   /**
@@ -122,7 +150,7 @@ public class LLVMIRGenerator {
 
     indentLevel--;
 
-    newLine("}", 0);
+    newLine("}");
 
     return llvmirCode.toString();
   }
@@ -136,34 +164,6 @@ public class LLVMIRGenerator {
         newCodeBranch(child);
       }
     }
-  }
-
-  /**
-   * Retrieve the varId of a named var. Create it inplace if not existant
-   * as named var are global, no need to look for scope (and there is a garbage
-   * collector).
-   */
-  private String getOrNewI32(String varName) {
-    if (!var.containsKey(varName)) {
-      String varId = "%var_" + varName;
-      var.put(varName, varId);
-      newLine(varId + " = alloca i32");
-    }
-    return var.get(varName);
-  }
-
-  /** load a named var into a new unamed var. Create named var if non existant */
-  private String loadI32(String varName) {
-    String varId = getOrNewI32(varName);
-    String unamedI32Id = newUnamedI32Id();
-    newLine(unamedI32Id + " = load i32, i32 * " + varId);
-    return unamedI32Id;
-  }
-
-  /** store an unamed var into a named var. Create named var if non existant */
-  private void storeInNamI32(String varName, String unamedI32Id) {
-    String varId = getOrNewI32(varName);
-    newLine("store i32 " + unamedI32Id + ", i32* " + varId);
   }
 
   /**
@@ -203,19 +203,26 @@ public class LLVMIRGenerator {
    */
   private void newAssign(ParseTree treeNode) {
     String varName = null;
-    ParseTree exprNode = null;
+    String varId = null;
 
+    // I know, for loop, make the code heavier but it allows to be confident in the
+    // value taken
+    // There is a error in ParseTree, an assignement goes directly to
+    // enwExprArithAddSub. meaning this for loop is necessary.
     for (ParseTree child : treeNode.getChildren()) {
       if (child.getLabel().isTerminal() &&
-          child.getLabel().getValue() == LexicalUnit.VARNAME) {
+          child.getLabel().getType() == LexicalUnit.VARNAME) {
         varName = child.getLabel().getValue().toString();
       } else if (child.getLabel().isNonTerminal() &&
           child.getLabel().getValue() == NonTerminal.EXPR_ARITH) {
-        exprNode = child;
+        varId = newExprArith(child);
+      } else if (child.getLabel().isNonTerminal() &&
+          child.getLabel().getValue() == NonTerminal.EXPR_ADDSUB) {
+        varId = newExprAddSub(child);
       }
+
     }
 
-    String varId = newExprArith(exprNode);
     storeInNamI32(varName, varId);
   }
 
@@ -234,10 +241,10 @@ public class LLVMIRGenerator {
       ParseTree child = children.get(i);
       if (child.getLabel().getValue() == NonTerminal.COND_IMPL) {
         condNode = child;
-      } else if (child.getLabel().getValue() == LexicalUnit.THEN &&
+      } else if (child.getLabel().getType() == LexicalUnit.THEN &&
           i + 1 < children.size()) {
         thenNode = children.get(1 + i);
-      } else if (child.getLabel().getValue() == LexicalUnit.ELSE &&
+      } else if (child.getLabel().getType() == LexicalUnit.ELSE &&
           i + 1 < children.size()) {
         elseNode = children.get(1 + i);
       }
@@ -287,7 +294,7 @@ public class LLVMIRGenerator {
   /**
    * Create a new cond impl. Store the result in variable en return the identifier
    * (%).
-   * 
+   *
    * @param treeNode
    * @return the unamed i32 id of the result.
    */
@@ -308,7 +315,13 @@ public class LLVMIRGenerator {
       newLine(notLeft + " = or i1 " + leftId + ", true ; invert left");
 
       String implId = newUnamedI32Id();
-      newLine(implId + " = or i1 " + notLeft + ", " + rightId + "; (not left) or right");
+      newLine(
+          implId +
+              " = or i1 " +
+              notLeft +
+              ", " +
+              rightId +
+              "; (not left) or right");
 
       return implId;
     }
@@ -319,7 +332,6 @@ public class LLVMIRGenerator {
 
     if (child.getLabel().getValue() == NonTerminal.COND_IMPL) {
       // COndAtom => | Cond |
-
     } else {
       // CondAtom => CondComp
       return newCondComp(child);
@@ -337,7 +349,8 @@ public class LLVMIRGenerator {
       case "<=":
         return "sle";
       default:
-        throw new IllegalStateException("Unknow comparison opeartor: " + compOp);
+        throw new IllegalStateException(
+            "Unknow comparison opeartor: " + compOp);
     }
   }
 
@@ -348,7 +361,6 @@ public class LLVMIRGenerator {
    * @return String id of the unamed i32 holding the result.
    */
   private String newCondComp(ParseTree treeNode) {
-
     List<ParseTree> children = treeNode.getChildren();
 
     String lefti32Id = null;
@@ -362,7 +374,9 @@ public class LLVMIRGenerator {
     ParseTree comp = children.get(1);
     LexicalUnit opType = comp.getLabel().getType();
 
-    if (opType == LexicalUnit.EQUAL || opType == LexicalUnit.SMALLER || opType == LexicalUnit.SMALEQ) {
+    if (opType == LexicalUnit.EQUAL ||
+        opType == LexicalUnit.SMALLER ||
+        opType == LexicalUnit.SMALEQ) {
       op = comp.getLabel().getValue().toString();
     }
 
@@ -373,7 +387,14 @@ public class LLVMIRGenerator {
 
     String resultId = newUnamedI32Id();
     newLine("; Comparison");
-    newLine(resultId + " = icmp " + compId + " i32 " + lefti32Id + ", " + righti32Id);
+    newLine(
+        resultId +
+            " = icmp " +
+            compId +
+            " i32 " +
+            lefti32Id +
+            ", " +
+            righti32Id);
 
     return resultId;
   }
@@ -471,7 +492,6 @@ public class LLVMIRGenerator {
     String result = newExprAddSub(child);
     indentLevel--;
     return result;
-
   }
 
   /**
@@ -492,9 +512,15 @@ public class LLVMIRGenerator {
       String newResultId = newUnamedI32Id();
 
       if (op == LexicalUnit.PLUS) {
-        newLine(newResultId + " = i32 " + resultId + ", " + newExprMulDiv);
+        newLine(
+            newResultId + " = i32 " + resultId + ", " + newExprMulDiv);
       } else if (op == LexicalUnit.MINUS) {
-        newLine(newResultId + " = sub i32 " + resultId + ", " + newExprMulDiv);
+        newLine(
+            newResultId +
+                " = sub i32 " +
+                resultId +
+                ", " +
+                newExprMulDiv);
       }
       resultId = newResultId;
     }
@@ -512,9 +538,15 @@ public class LLVMIRGenerator {
       String newResultId = newUnamedI32Id();
 
       if (op == LexicalUnit.TIMES) {
-        newLine(newResultId + " = mul i32 " + resultId + ", " + newExprUnary);
+        newLine(
+            newResultId + " = mul i32 " + resultId + ", " + newExprUnary);
       } else if (op == LexicalUnit.DIVIDE) {
-        newLine(newResultId + " = sdiv i32 " + resultId + ", " + newExprUnary);
+        newLine(
+            newResultId +
+                " = sdiv i32 " +
+                resultId +
+                ", " +
+                newExprUnary);
       }
 
       resultId = newResultId;
@@ -537,8 +569,15 @@ public class LLVMIRGenerator {
       String resultId = newUnamedI32Id();
       newLine(resultId + " = sub i32 0, " + newExprPrimary);
       return resultId;
-    } else {
+
+    } else if (children.get(0).getLabel().getValue() == NonTerminal.EXPR_PRIMARY) {
       return newExprPrimary(children.get(0));
+
+    } else if (children.get(0).getLabel().getType() == LexicalUnit.VARNAME) {
+      return newExprPrimary(treeNode);
+
+    } else {
+      throw new RuntimeException("Unexpected node " + children.get(0).getLabel().getType());
     }
   }
 
@@ -548,12 +587,10 @@ public class LLVMIRGenerator {
     LexicalUnit type = child.getLabel().getType();
 
     if (type == LexicalUnit.VARNAME) {
-
       String varName = child.getLabel().getValue().toString();
 
       return loadI32(varName);
     } else if (type == LexicalUnit.NUMBER) {
-
       String number = child.getLabel().getValue().toString();
       String resultId = newUnamedI32Id();
 
@@ -561,12 +598,10 @@ public class LLVMIRGenerator {
 
       return resultId;
     } else if (type == LexicalUnit.LPAREN) {
-
       ParseTree exprNode = treeNode.getChildren().get(1);
 
       return newExprArith(exprNode);
     } else {
-
       throw new RuntimeException(
           "Unexpected primary expression type: " + type);
     }
