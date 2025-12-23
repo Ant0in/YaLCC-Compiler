@@ -103,7 +103,7 @@ public class LLVMIRGenerator {
     newLine(
         """
             ; declare output and input functions.
-            @.strR = private unnamed_addr constant [3 x i8] c"%d\00", align 1
+            @.strR = private unnamed_addr constant [3 x i8] c"%d\\00", align 1
 
             ; Function Attrs: noinline nounwind optnone ssp uwtable
             define i32 @readInt() #0 {
@@ -113,7 +113,7 @@ public class LLVMIRGenerator {
               ret i32 %3
             }
 
-            @.strP = private unnamed_addr constant [4 x i8] c"%d\0A\00", align 1
+            @.strP = private unnamed_addr constant [4 x i8] c"%d\0A\\00", align 1
 
             define void @println(i32 %x) {
               %1 = alloca i32, align 4
@@ -138,7 +138,7 @@ public class LLVMIRGenerator {
   public String generateLLVMIR(ParseTree treeNode) {
     indentLevel = 0;
     header();
-    newLine("define i32 @Prog() {");
+    newLine("define i32 @main() {");
     newLine("entry:");
 
     indentLevel++;
@@ -411,6 +411,9 @@ public class LLVMIRGenerator {
         condNode = child;
       } else if (child.getLabel().getValue() == NonTerminal.CODE) {
         codeNode = child;
+      } else {
+        throw new RuntimeException(
+            "Unexpected node in while: " + child.getLabel().getValue());
       }
     }
 
@@ -539,7 +542,7 @@ public class LLVMIRGenerator {
 
       if (op == LexicalUnit.PLUS) {
         newLine(
-            newResultId + " = i32 " + resultId + ", " + newExprResult);
+            newResultId + " = add i32 " + resultId + ", " + newExprResult);
       } else if (op == LexicalUnit.MINUS) {
         newLine(
             newResultId +
