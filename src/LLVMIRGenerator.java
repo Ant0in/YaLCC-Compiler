@@ -407,7 +407,8 @@ public class LLVMIRGenerator {
 
     List<ParseTree> children = treeNode.getChildren();
     for (ParseTree child : children) {
-      if (child.getLabel().getValue() == NonTerminal.COND_IMPL) {
+      if (child.getLabel().getValue() == NonTerminal.COND_IMPL
+          || child.getLabel().getValue() == NonTerminal.COND_COMP) {
         condNode = child;
       } else if (child.getLabel().getValue() == NonTerminal.CODE) {
         codeNode = child;
@@ -427,7 +428,16 @@ public class LLVMIRGenerator {
     newLine("br label %" + startWhileLabel);
     newLine(startWhileLabel + ":");
     indentLevel++;
-    String condResultId = newCond(condNode);
+    String condResultId = null;
+    if (condNode.getLabel().getValue() == NonTerminal.COND_IMPL) {
+      condResultId = newCond(condNode);
+    } else if (condNode.getLabel().getValue() == NonTerminal.COND_COMP) {
+      condResultId = newCondComp(condNode);
+    } else {
+      throw new RuntimeException(
+          "Expected COND_IMPL or COND_COMP but found " +
+              condNode.getLabel().getValue());
+    }
     newLine(
         "br i1 " +
             condResultId +
