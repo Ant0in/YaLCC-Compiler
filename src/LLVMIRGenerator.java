@@ -20,7 +20,7 @@ public class LLVMIRGenerator {
   /** Used by newLine to indent lines */
   private int indentLevel = 0;
 
-  public LLVMIRGenerator(ParseTree parseTree) {
+  public LLVMIRGenerator() {
     this.llvmirCode = new StringBuilder();
     this.var = new HashMap<>();
   }
