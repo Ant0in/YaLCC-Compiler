@@ -1,7 +1,8 @@
 Prog Math Is
 
 Input(a);
-c = (a + a) / a + a;
-Print(a);
+Input(b);
+c = (a + b) * 2 + a;
+Print(c);
 
 End;

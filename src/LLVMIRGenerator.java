@@ -4,7 +4,7 @@ import java.util.List;
 /**
  * LLVM IR Generator from yaLcc parse tree
  */
-public class LlvmirGenerator {
+public class LLVMIRGenerator {
 
   private StringBuilder llvmirCode;
 
@@ -20,7 +20,7 @@ public class LlvmirGenerator {
   /** Used by newLine to indent lines */
   private int indentLevel = 0;
 
-  public LlvmirGenerator(ParseTree parseTree) {
+  public LLVMIRGenerator(ParseTree parseTree) {
     this.llvmirCode = new StringBuilder();
     this.var = new HashMap<>();
   }
