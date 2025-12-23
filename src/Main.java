@@ -103,6 +103,10 @@ public class Main {
           }
         }
       }
+      LLVMIRGenerator llvmGen = new LLVMIRGenerator();
+      String llvmirCodeString = llvmGen.generateLLVMIR(parseTree);
+      System.out.println(llvmirCodeString);
+
     }
   }
 
