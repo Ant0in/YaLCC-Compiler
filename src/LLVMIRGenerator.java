@@ -565,7 +565,7 @@ public class LLVMIRGenerator {
       } else if (children.get(i + 1).getLabel().getValue() == NonTerminal.EXPR_ADDSUB) {
         newExprResult = newExprAddSub(children.get(i + 1));
       } else if (children.get(i + 1).getLabel().getType() == LexicalUnit.VARNAME
-          || children.get(i + 1).getLabel().getType() == LexicalUnit.NUMBRE) {
+          || children.get(i + 1).getLabel().getType() == LexicalUnit.NUMBER) {
         newExprResult = newExprPrimary(children.get(i + 1));
       } else if (children.get(i + 1).getLabel().getValue() == NonTerminal.EXPR_UNARY) {
         newExprResult = newExprUnary(children.get(i + 1));
@@ -612,7 +612,8 @@ public class LLVMIRGenerator {
     } else if (children.get(0).getLabel().getValue() == NonTerminal.EXPR_PRIMARY) {
       return newExprPrimary(children.get(0));
 
-    } else if (children.get(0).getLabel().getType() == LexicalUnit.VARNAME) {
+    } else if (children.get(0).getLabel().getType() == LexicalUnit.VARNAME
+        || children.get(0).getLabel().getType() == LexicalUnit.NUMBER) {
       return newExprPrimary(treeNode);
 
     } else {
@@ -626,9 +627,8 @@ public class LLVMIRGenerator {
     LexicalUnit type = child.getLabel().getType();
 
     if (type == LexicalUnit.VARNAME) {
-      String varName = child.getLabel().getValue().toString();
+      return loadI32(child.getLabel().getValue().toString());
 
-      return loadI32(varName);
     } else if (type == LexicalUnit.NUMBER) {
       String number = child.getLabel().getValue().toString();
       String resultId = newUnamedI32Id();
