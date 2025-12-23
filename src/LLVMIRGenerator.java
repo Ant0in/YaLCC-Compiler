@@ -443,6 +443,7 @@ public class LLVMIRGenerator {
 
     // end while
     newLine(endWhileLabel = ":");
+    newLine("; end while");
   }
 
   /**
@@ -561,14 +562,22 @@ public class LLVMIRGenerator {
 
       String newExprResult = null;
       if (children.get(i + 1).getLabel().getValue() == NonTerminal.EXPR_MULDIV) {
+
         newExprResult = newExprMulDiv(children.get(i + 1));
+
       } else if (children.get(i + 1).getLabel().getValue() == NonTerminal.EXPR_ADDSUB) {
+
         newExprResult = newExprAddSub(children.get(i + 1));
+
       } else if (children.get(i + 1).getLabel().getType() == LexicalUnit.VARNAME
           || children.get(i + 1).getLabel().getType() == LexicalUnit.NUMBER) {
+
         newExprResult = newExprPrimary(children.get(i + 1));
+
       } else if (children.get(i + 1).getLabel().getValue() == NonTerminal.EXPR_UNARY) {
+
         newExprResult = newExprUnary(children.get(i + 1));
+
       } else {
         throw new RuntimeException(
             "Expected EXPR_MULDIV but found " +
@@ -623,7 +632,13 @@ public class LLVMIRGenerator {
 
   private String newExprPrimary(ParseTree treeNode) {
     // ExprPrimary → VarName | Number | ( ExprArith )
-    ParseTree child = treeNode.getChildren().get(0);
+    List<ParseTree> children = treeNode.getChildren();
+    ParseTree child = null;
+    if (children.size() > 0) {
+      child = children.get(0);
+    } else {
+      child = treeNode;
+    }
     LexicalUnit type = child.getLabel().getType();
 
     if (type == LexicalUnit.VARNAME) {
