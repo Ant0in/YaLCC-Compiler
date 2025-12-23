@@ -534,7 +534,19 @@ public class LLVMIRGenerator {
     for (int i = 1; i < children.size(); i += 2) {
       LexicalUnit op = children.get(i).getLabel().getType();
 
-      String newExprUnary = newExprUnary(children.get(i + 1));
+      // if (children.get(i + 1).getLabel().getValue() != NonTerminal.EXPR_UNARY) {
+      // throw new RuntimeException(
+      // "Expected EXPR_UNARY but found " +
+      // children.get(i + 1).getLabel().getValue());
+      // }
+
+      String newExprUnary = null;
+      if (children.get(i + 1).getLabel().getValue() == LexicalUnit.VARNAME) {
+        newExprUnary = newExprPrimary(children.get(i + 1));
+      } else {
+
+        newExprUnary = newExprUnary(children.get(i + 1));
+      }
       String newResultId = newUnamedI32Id();
 
       if (op == LexicalUnit.TIMES) {
