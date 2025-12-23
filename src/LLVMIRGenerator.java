@@ -559,31 +559,33 @@ public class LLVMIRGenerator {
     for (int i = 1; i < children.size(); i += 2) {
       LexicalUnit op = children.get(i).getLabel().getType();
 
-      // if (children.get(i + 1).getLabel().getValue() != NonTerminal.EXPR_UNARY) {
-      // throw new RuntimeException(
-      // "Expected EXPR_UNARY but found " +
-      // children.get(i + 1).getLabel().getValue());
-      // }
-
-      String newExprUnary = null;
-      if (children.get(i + 1).getLabel().getValue() == LexicalUnit.VARNAME) {
-        newExprUnary = newExprPrimary(children.get(i + 1));
+      String newExprResult = null;
+      if (children.get(i + 1).getLabel().getValue() == NonTerminal.EXPR_MULDIV) {
+        newExprResult = newExprMulDiv(children.get(i + 1));
+      } else if (children.get(i + 1).getLabel().getValue() == NonTerminal.EXPR_ADDSUB) {
+        newExprResult = newExprAddSub(children.get(i + 1));
+      } else if (children.get(i + 1).getLabel().getType() == LexicalUnit.VARNAME
+          || children.get(i + 1).getLabel().getType() == LexicalUnit.NUMBRE) {
+        newExprResult = newExprPrimary(children.get(i + 1));
+      } else if (children.get(i + 1).getLabel().getValue() == NonTerminal.EXPR_UNARY) {
+        newExprResult = newExprUnary(children.get(i + 1));
       } else {
-
-        newExprUnary = newExprUnary(children.get(i + 1));
+        throw new RuntimeException(
+            "Expected EXPR_MULDIV but found " +
+                children.get(i + 1).getLabel().getValue());
       }
       String newResultId = newUnamedI32Id();
 
       if (op == LexicalUnit.TIMES) {
         newLine(
-            newResultId + " = mul i32 " + resultId + ", " + newExprUnary);
+            newResultId + " = mul i32 " + resultId + ", " + newExprResult);
       } else if (op == LexicalUnit.DIVIDE) {
         newLine(
             newResultId +
                 " = sdiv i32 " +
                 resultId +
                 ", " +
-                newExprUnary);
+                newExprResult);
       }
 
       resultId = newResultId;
